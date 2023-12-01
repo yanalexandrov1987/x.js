@@ -53,7 +53,7 @@ export default class Component {
     initialize(rootElement, data) {
         domWalk(rootElement, el => {
             getAttributes(el).forEach(attribute => {
-                let {directive, event, expression, modifiers, name, prop, startsWith} = attribute;
+                let {directive, event, expression, modifiers, prop} = attribute;
 
                 // init events
                 if (event) {
@@ -83,13 +83,9 @@ export default class Component {
                         return;
                     }
 
-                    try {
-                        let { output } = this.evaluate(expression);
+                    let { output } = this.evaluate(expression);
 
-                        x.directives[directive](el, output, attribute, x);
-                    } catch (error) {
-                        x.directives[directive](el, expression, attribute, x, this);
-                    }
+                    x.directives[directive](el, output, attribute, x);
                 }
             })
         })
@@ -105,7 +101,9 @@ export default class Component {
         }
 
         debounce(walkThenClearDependencyTracker, 5)(this.el, function (el) {
-            getAttributes(el).forEach(({prop, attribute, directive, modifiers, expression}) => {
+            getAttributes(el).forEach(attribute => {
+                let {directive, expression, prop} = attribute;
+
                 if (prop) {
                     let { output, deps } = self.evaluate(prop)
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
@@ -120,7 +118,7 @@ export default class Component {
 
                     let { output, deps } = self.evaluate(expression)
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        x.directives[directive](el, output, modifiers, x);
+                        x.directives[directive](el, output, attribute, x);
                     }
                 }
             })
