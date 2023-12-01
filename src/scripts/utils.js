@@ -21,11 +21,20 @@ export function saferEval(expression, dataContext, additionalHelperVariables = {
 }
 
 export function getAttributes(el) {
-  return [...el.attributes].filter(({ name }) => /^(x.|x-|@|:)/.test(name)).map(({ name, value }) => ({
-    name,
-    modifiers: name.split('.').slice(1),
-    expression: value,
-  }));
+  const regexp = /^(x-|x.|@|:)/;
+  return [...el.attributes].filter(({ name }) => regexp.test(name)).map(({ name, value }) => {
+    const startsWith = name.match(regexp)[0];
+    return {
+      name,
+      attribute: name,
+      event: startsWith === '@' ? name.replace('@', '').split('.')[0] : '',
+      directive: startsWith === 'x-' ? name : (startsWith === ':' ? 'x-bind' : ''),
+      startsWith: startsWith,
+      modifiers: name.replace('x.', '').split('.').slice(1),
+      expression: value,
+      prop: startsWith === 'x.' ? name.replace('x.', '') : ''
+    }
+  });
 }
 
 export function updateAttribute(el, name, value) {
@@ -53,6 +62,8 @@ export function updateAttribute(el, name, value) {
       el.value = value
     }
   } else if (name === 'class') {
+    console.log(name)
+    console.log(value)
     if (Array.isArray(value)) {
       el.setAttribute('class', value.join(' '))
     } else {

@@ -4,24 +4,21 @@ import { domWalk } from './dom';
 export function fetchProps(rootElement, data) {
   const checkboxes = {};
   domWalk(rootElement, el => {
-    getAttributes(el).forEach(({name, modifiers, expression}) => {
-      if (name.startsWith('x.')) {
-        let prop = modifiers[0] || '';
-        if (prop) {
-          let keys;
+    getAttributes(el).forEach(({prop, modifiers}) => {
+      if (prop) {
+        let keys;
 
-          // try fetch multiple checkboxes with same prop
-          if (el.type === 'checkbox') {
-            checkboxes[prop] = checkboxes[prop] || {};
-            checkboxes[prop][el.value] = el.checked;
-            keys = Object.keys(checkboxes[prop]);
-            data[prop] = keys.length > 1 ? keys.filter(key => checkboxes[prop][key]) : '';
-          }
+        // try fetch multiple checkboxes with same prop
+        if (el.type === 'checkbox') {
+          checkboxes[prop] = checkboxes[prop] || {};
+          checkboxes[prop][el.value] = el.checked;
+          keys = Object.keys(checkboxes[prop]);
+          data[prop] = keys.length > 1 ? keys.filter(key => checkboxes[prop][key]) : '';
+        }
 
-          let modelExpression = generateExpressionForProp(el, data, prop, modifiers)
-          if (!Array.isArray(keys) || keys.length === 1) {
-            data[prop] = saferEval(modelExpression, data, {'$el': el})
-          }
+        let modelExpression = generateExpressionForProp(el, data, prop, modifiers)
+        if (!Array.isArray(keys) || keys.length === 1) {
+          data[prop] = saferEval(modelExpression, data, {'$el': el})
         }
       }
     })

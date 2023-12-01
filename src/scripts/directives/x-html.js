@@ -1,5 +1,5 @@
 import { directive } from '../directives';
 
-directive('html', (el, expression, modifiers, x) => {
+directive('html', (el, expression, attribute, x) => {
   el.innerHTML = expression;
 });
