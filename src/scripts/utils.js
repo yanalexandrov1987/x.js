@@ -40,20 +40,7 @@ export function updateAttribute(el, name, value) {
     if (el.type === 'radio') {
       el.checked = el.value === value
     } else if (el.type === 'checkbox') {
-      if (Array.isArray(value)) {
-        // I'm purposely not using Array.includes here because it's
-        // strict, and because of Numeric/String mis-casting, I
-        // want the "includes" to be "fuzzy".
-        let valueFound = false
-        value.forEach(val => {
-          if (val === el.value) {
-            valueFound = true
-          }
-        })
-        el.checked = valueFound
-      } else {
-        el.checked = !! value
-      }
+      el.checked = Array.isArray(value) ? value.some(val => val === el.value) : !!value
     } else if (el.tagName === 'SELECT') {
       updateSelect(el, value)
     } else {
@@ -66,20 +53,15 @@ export function updateAttribute(el, name, value) {
       // Use the class object syntax that vue uses to toggle them.
       Object.keys(value).forEach(className => value[className] ? el.classList.add(className) : el.classList.remove(className))
     }
-  } else if (['disabled', 'readonly', 'required', 'checked'].includes(name)) {
-    // Boolean attributes have to be explicitly added and removed, not just set.
-    if (!! value) {
-      el.setAttribute(name, '')
-    } else {
-      el.removeAttribute(name)
-    }
+  } else if (['disabled', 'readonly', 'required', 'checked', 'autofocus', 'autoplay', 'hidden'].includes(name)) {
+    !!value ? el.setAttribute(name, '') : el.removeAttribute(name);
   } else {
     el.setAttribute(name, value)
   }
 }
 
 export function updateSelect(el, value) {
-  const arrayWrappedValue = [].concat(value).map(value => { return value + '' })
+  const arrayWrappedValue = [].concat(value).map(value => value + '')
 
   Array.from(el.options).forEach(option => {
     option.selected = arrayWrappedValue.includes(option.value || option.text)
