@@ -126,7 +126,6 @@ export default class Component {
     }
 
     registerListener(el, event, modifiers, expression) {
-        event = event.replace('@', '');
         if (modifiers.includes('outside')) {
             // Listen for this event at the root level.
             document.addEventListener(event, e => {
