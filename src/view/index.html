@@ -25,7 +25,7 @@
       <li>Events with modification: <code>@click.prevent</code></li>
     </ul>
 
-    <div x-data="{count: 1, items: [{attributes: {href: '#', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
+    <div x-data="{count: 11, items: [{attributes: {href: '#', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
       <style>
         body {
           line-height: 150%;
@@ -55,7 +55,7 @@
         <div>
           inputo
         </div>
-        <input value="This is Input" x.inputo>
+        <input value="10" x.inputo :min="8" :max="12" :type="'number'">
         <div x-text="inputo"></div>
         <div x-text="count"></div>
         <br>
@@ -148,7 +148,7 @@
 
       Model input:
       <div x-text="friends"></div>
-      <input value="Hello, my friend!" :value="friends" x.friends>
+      <input value="Hello, my friend!" x.friends>
       <button @click="friends = 'Hello world!'">Change text</button>
       <br>
       <br>

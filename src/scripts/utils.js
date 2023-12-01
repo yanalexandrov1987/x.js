@@ -21,11 +21,18 @@ export function saferEval(expression, dataContext, additionalHelperVariables = {
 }
 
 export function getAttributes(el) {
-  return [...el.attributes].filter(({ name }) => /^(x.|x-|@|:)/.test(name)).map(({ name, value }) => ({
-    name,
-    modifiers: name.split('.').slice(1),
-    expression: value,
-  }));
+  const regexp = /^(x-|x.|@|:)/;
+  return [...el.attributes].filter(({ name }) => regexp.test(name)).map(({ name, value }) => {
+    const startsWith = name.match(regexp)[0];
+    return {
+      attribute: name,
+      directive: startsWith === 'x-' ? name : (startsWith === ':' ? 'x-bind' : ''),
+      event: startsWith === '@' ? name.replace('@', '').split('.')[0] : '',
+      expression: value,
+      modifiers: name.replace('x.', '').split('.').slice(1),
+      prop: startsWith === 'x.' ? name.replace('x.', '') : ''
+    }
+  });
 }
 
 export function updateAttribute(el, name, value) {

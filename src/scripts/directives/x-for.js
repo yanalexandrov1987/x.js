@@ -1,7 +1,7 @@
 import { directive } from '../directives';
 import { saferEval } from '../utils';
 
-directive('for', (el, expression, modifiers, x, component) => {
+directive('for', (el, expression, attribute, x, component) => {
   if (typeof expression !== 'string') {
     return;
   }

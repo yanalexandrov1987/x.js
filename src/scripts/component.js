@@ -52,16 +52,16 @@ export default class Component {
 
     initialize(rootElement, data) {
         domWalk(rootElement, el => {
-            getAttributes(el).forEach(({name, modifiers, expression}) => {
+            getAttributes(el).forEach(attribute => {
+                let {directive, event, expression, modifiers, prop} = attribute;
+
                 // init events
-                if (name.startsWith('@')) {
-                    this.registerListener(el, name, modifiers, expression);
+                if (event) {
+                    this.registerListener(el, event, modifiers, expression);
                 }
 
-                // init models
-                if (name.startsWith('x.')) {
-                    name = modifiers[0] || '';
-
+                // init props
+                if (prop) {
                     // If the element we are binding to is a select, a radio, or checkbox
                     // we'll listen for the change event instead of the "input" event.
                     let event = (el.tagName.toLowerCase() === 'select')
@@ -69,35 +69,23 @@ export default class Component {
                     || modifiers.includes('lazy')
                       ? 'change' : 'input'
 
-                    const listenerExpression = generateExpressionForProp(el, data, name, modifiers)
+                    const listenerExpression = generateExpressionForProp(el, data, prop, modifiers)
 
                     this.registerListener(el, event, modifiers, listenerExpression)
 
-                    if (name) {
-                        let { output } = this.evaluate(name)
-                        updateAttribute(el, 'value', output)
-                    }
-                }
-
-                // init binding attributes
-                if (name.startsWith(':')) {
-                    modifiers = name;
-                    name      = 'x-bind';
+                    let { output } = this.evaluate(prop)
+                    updateAttribute(el, 'value', output)
                 }
 
                 // init directives
-                if (name.startsWith('x-')) {
-                    if (!Object.keys(x.directives).includes(name)) {
+                if (directive) {
+                    if (!Object.keys(x.directives).includes(directive)) {
                         return;
                     }
 
-                    try {
-                        let { output } = this.evaluate(expression);
+                    let { output } = this.evaluate(expression);
 
-                        x.directives[name](el, output, modifiers, x);
-                    } catch (error) {
-                        x.directives[name](el, expression, modifiers, x, this);
-                    }
+                    x.directives[directive](el, output, attribute, x);
                 }
             })
         })
@@ -113,29 +101,24 @@ export default class Component {
         }
 
         debounce(walkThenClearDependencyTracker, 5)(this.el, function (el) {
-            getAttributes(el).forEach(({name, modifiers, expression}) => {
-                if (name.startsWith('x.')) {
-                    name = modifiers[0] || '';
-                    if (name) {
-                        let { output, deps } = self.evaluate(name)
-                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                            updateAttribute(el, 'value', output)
-                        }
+            getAttributes(el).forEach(attribute => {
+                let {directive, expression, prop} = attribute;
+
+                if (prop) {
+                    let { output, deps } = self.evaluate(prop)
+                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                        updateAttribute(el, 'value', output)
                     }
                 }
 
-                if (name.startsWith(':')) {
-                    modifiers = name;
-                    name      = 'x-bind';
-                }
-
-                if (name.startsWith('x-')) {
-                    if (!Object.keys(x.directives).includes(name)) {
+                if (directive) {
+                    if (!Object.keys(x.directives).includes(directive)) {
                         return;
                     }
+
                     let { output, deps } = self.evaluate(expression)
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        x.directives[name](el, output, modifiers, x);
+                        x.directives[directive](el, output, attribute, x);
                     }
                 }
             })
