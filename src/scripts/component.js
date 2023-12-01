@@ -62,7 +62,6 @@ export default class Component {
 
                 // init props
                 if (prop) {
-                    console.log(prop)
                     // If the element we are binding to is a select, a radio, or checkbox
                     // we'll listen for the change event instead of the "input" event.
                     let event = (el.tagName.toLowerCase() === 'select')

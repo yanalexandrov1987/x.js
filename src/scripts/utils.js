@@ -62,8 +62,6 @@ export function updateAttribute(el, name, value) {
       el.value = value
     }
   } else if (name === 'class') {
-    console.log(name)
-    console.log(value)
     if (Array.isArray(value)) {
       el.setAttribute('class', value.join(' '))
     } else {
