@@ -12,7 +12,7 @@ export default class Component {
         this.initialize(el, this.data)
     }
 
-    evaluate(expression) {
+    evaluate(expression, additionalHelperVariables) {
         let affectedDataKeys = []
 
         const proxiedData = new Proxy(this.data, {
@@ -23,7 +23,7 @@ export default class Component {
             }
         })
 
-        const result = saferEval(expression, proxiedData)
+        const result = saferEval(expression, proxiedData, additionalHelperVariables)
 
         return {
             output: result,
@@ -83,9 +83,13 @@ export default class Component {
                         return;
                     }
 
-                    let { output } = this.evaluate(expression);
+                    try {
+                        let { output } = this.evaluate(expression);
 
-                    x.directives[directive](el, output, attribute, x);
+                        x.directives[directive](el, output, attribute, x);
+                    } catch (e) {
+                        x.directives[directive](el, expression, attribute, x, this);
+                    }
                 }
             })
         })

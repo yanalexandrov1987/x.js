@@ -25,7 +25,11 @@
       <li>Events with modification: <code>@click.prevent</code></li>
     </ul>
 
-    <div x-data="{count: 11, items: [{attributes: {href: '#', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
+    <ul x-data="{ colors: ['Red', 'Orange', 'Yellow'] }">
+      <li x-for="color in colors" x-text="color"></li>
+    </ul>
+
+    <div x-data="{count: 11, lists: [{attributes: {href: '#', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
       <style>
         body {
           line-height: 150%;
@@ -42,9 +46,10 @@
       </style>
       List Items!:
       <ul>
-<!--        <li x-for="item in items">-->
+<!--        <li x-for="list in lists">-->
 <!--          <span># </span>-->
-<!--          <a :href="item.attributes.href" :target="item.attributes.target" x-text="item.title"></a>-->
+<!--          <a x-text="list.title"></a>-->
+<!--          <span @click="lists[0].title = 'Change Title'">Get List</span>-->
 <!--        </li>-->
       </ul>
       <br>
