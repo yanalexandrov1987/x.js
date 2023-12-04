@@ -133,63 +133,63 @@
       </form>
     </div>
 
-<!--    <div x-data="{ foo: 'bar', count: '2', hel: '<strong>x-html directive</strong>', test: 'X-text directive', open: false, tab: 'foo' }">-->
-<!--      <div x-text="test"></div>-->
-<!--      <div x-html="hel"></div>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+    <div x-data="{ foo: 'bar', count: '2', hel: '<strong>x-html directive</strong>', test: 'X-text directive', open: false, tab: 'foo' }">
+      <div x-text="test"></div>
+      <div x-html="hel"></div>
+      <br>
+      <br>
+      <br>
 
-<!--      <span x-text="foo" x-ref="lob"></span>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      <span x-text="foo" x-ref="lob"></span>
+      <br>
+      <br>
+      <br>
 
-<!--      <button @click="console.log($refs.lob)">console.log</button>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      <button @click="console.log($refs.lob)">console.log</button>
+      <br>
+      <br>
+      <br>
 
-<!--      Model input:-->
-<!--      <div x-text="friends"></div>-->
-<!--      <input value="Hello, my friend!" x.friends>-->
-<!--      <button @click="friends = 'Hello world!'">Change text</button>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      Model input:
+      <div x-text="friends"></div>
+      <input value="Hello, my friend!" x.friends>
+      <button @click="friends = 'Hello world!'">Change text</button>
+      <br>
+      <br>
+      <br>
 
-<!--      <div>-->
-<!--        <button @click="count&#45;&#45;">-</button>-->
-<!--        <span x-text="count"></span>-->
-<!--        <button @click="count++">+</button>-->
-<!--      </div>-->
-<!--      <div x-show="count > 2" style="font-size: 20px;">This is shown because count is more than 2</div>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      <div>
+        <button @click="count--">-</button>
+        <span x-text="count"></span>
+        <button @click="count++">+</button>
+      </div>
+      <div x-show="count > 2" style="font-size: 20px;">This is shown because count is more than 2</div>
+      <br>
+      <br>
+      <br>
 
-<!--      <input x-model="test">-->
-<!--      <button @click="test = 'baz'">Change to baz</button>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      <input x-model="test">
+      <button @click="test = 'baz'">Change to baz</button>
+      <br>
+      <br>
+      <br>
 
-<!--      <button @click="open = true">Open Dropdown</button>-->
-<!--      <ul class="hidden" :class="{ 'hidden': ! open }" @click.outside="open = false">-->
-<!--        Dropdown Body-->
-<!--      </ul>-->
-<!--      <br>-->
-<!--      <br>-->
-<!--      <br>-->
+      <button @click="open = true">Open Dropdown</button>
+      <ul class="hidden" :class="{ 'hidden': ! open }" @click.outside="open = false">
+        Dropdown Body
+      </ul>
+      <br>
+      <br>
+      <br>
 
-<!--      <div>-->
-<!--        <button :class="{ 'active': tab === 'foo' }" @click="tab = 'foo'">Foo</button>-->
-<!--        <button :class="{ 'active': tab === 'bar' }" @click="tab = 'bar'">Bar</button>-->
+      <div>
+        <button :class="{ 'active': tab === 'foo' }" @click="tab = 'foo'">Foo</button>
+        <button :class="{ 'active': tab === 'bar' }" @click="tab = 'bar'">Bar</button>
 
-<!--        <div :class="{ 'hidden': tab !== 'foo' }">Tab Foo</div>-->
-<!--        <div class="hidden" :class="{ 'hidden': tab !== 'bar' }">Tab Bar</div>-->
-<!--      </div>-->
-<!--    </div>-->
+        <div :class="{ 'hidden': tab !== 'foo' }">Tab Foo</div>
+        <div class="hidden" :class="{ 'hidden': tab !== 'bar' }">Tab Bar</div>
+      </div>
+    </div>
 
   </div>
 <%= _.template(require('./parts/footer.html').default)(data) %>
