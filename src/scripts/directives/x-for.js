@@ -1,7 +1,5 @@
 import { directive } from '../directives';
-import { getAttributes, saferEval, updateAttribute } from "../utils";
-import { domWalk } from "../dom";
-import { generateExpressionForProp } from "../props";
+import { saferEval } from '../utils';
 
 directive('for', (el, expression, attribute, x, component) => {
   if (typeof expression !== 'string') {
@@ -11,30 +9,23 @@ directive('for', (el, expression, attribute, x, component) => {
   const [item, items] = expression.split(' in ');
 
   const dataItems = saferEval(`${items}`, component.data);
-  dataItems.forEach((dataItem, index) => {
+
+  let sibling = el.nextSibling;
+  while (sibling) {
+    const nextSibling = sibling.nextSibling;
+    sibling.parentNode.removeChild(sibling);
+    sibling = nextSibling;
+  }
+
+  dataItems.forEach(dataItem => {
     const clone = el.cloneNode(true);
 
     clone.removeAttribute('x-for');
 
     (async function() {
-      await domWalk(clone, el => {
-        getAttributes(el).forEach(attribute => {
-          let {directive, event, expression, modifiers, prop} = attribute;
+      await component.initialize(clone, component.data, {[item]: dataItem});
 
-          // init directives
-          if (directive) {
-            if (!Object.keys(x.directives).includes(directive)) {
-              return;
-            }
-
-            let { output } = component.evaluate(expression, {[item]: dataItem});
-
-            x.directives[directive](el, output, attribute, x);
-          }
-        })
-      })
-      console.log(clone)
-
+      clone.__x_data = dataItem;
       el.parentNode.appendChild(clone);
     })();
   });
