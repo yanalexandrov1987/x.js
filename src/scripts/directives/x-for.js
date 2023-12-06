@@ -8,16 +8,25 @@ directive('for', (el, expression, attribute, x, component) => {
 
   const [item, items] = expression.split(' in ');
 
-  const data = saferEval(`${items}`, component.data);
-  data.forEach(dataItem => {
+  const dataItems = saferEval(`${items}`, component.data);
+
+  let sibling = el.nextSibling;
+  while (sibling) {
+    const nextSibling = sibling.nextSibling;
+    sibling.parentNode.removeChild(sibling);
+    sibling = nextSibling;
+  }
+
+  dataItems.forEach(dataItem => {
     const clone = el.cloneNode(true);
 
     clone.removeAttribute('x-for');
 
-    console.log(clone)
-    console.log(dataItem)
-    component.initialize(clone, dataItem);
+    (async function() {
+      await component.initialize(clone, component.data, {[item]: dataItem});
 
-    el.parentNode.appendChild(clone);
+      clone.__x_data = dataItem;
+      el.parentNode.appendChild(clone);
+    })();
   });
 });

@@ -12,7 +12,7 @@ export default class Component {
         this.initialize(el, this.data)
     }
 
-    evaluate(expression) {
+    evaluate(expression, additionalHelperVariables) {
         let affectedDataKeys = []
 
         const proxiedData = new Proxy(this.data, {
@@ -23,7 +23,7 @@ export default class Component {
             }
         })
 
-        const result = saferEval(expression, proxiedData)
+        const result = saferEval(expression, proxiedData, additionalHelperVariables)
 
         return {
             output: result,
@@ -50,14 +50,15 @@ export default class Component {
         })
     }
 
-    initialize(rootElement, data) {
+    initialize(rootElement, data, additionalHelperVariables) {
+        const self = this;
         domWalk(rootElement, el => {
             getAttributes(el).forEach(attribute => {
                 let {directive, event, expression, modifiers, prop} = attribute;
 
                 // init events
                 if (event) {
-                    this.registerListener(el, event, modifiers, expression);
+                    self.registerListener(el, event, modifiers, expression);
                 }
 
                 // init props
@@ -71,9 +72,9 @@ export default class Component {
 
                     const listenerExpression = generateExpressionForProp(el, data, prop, modifiers)
 
-                    this.registerListener(el, event, modifiers, listenerExpression)
+                    self.registerListener(el, event, modifiers, listenerExpression)
 
-                    let { output } = this.evaluate(prop)
+                    let { output } = self.evaluate(prop, additionalHelperVariables)
                     updateAttribute(el, 'value', output)
                 }
 
@@ -83,24 +84,27 @@ export default class Component {
                         return;
                     }
 
-                    let { output } = this.evaluate(expression);
+                    try {
+                        let { output } = self.evaluate(expression, additionalHelperVariables);
 
-                    x.directives[directive](el, output, attribute, x);
+                        x.directives[directive](el, output, attribute, x);
+                    } catch (e) {
+                        x.directives[directive](el, expression, attribute, x, self);
+                    }
                 }
             })
         })
     }
 
     refresh() {
-        let self = this
-
+        const self = this;
         const walkThenClearDependencyTracker = (rootEl, callback) => {
             domWalk(rootEl, callback)
 
             self.concernedData = []
         }
 
-        debounce(walkThenClearDependencyTracker, 5)(this.el, function (el) {
+        debounce(walkThenClearDependencyTracker, 5)(self.el, el => {
             getAttributes(el).forEach(attribute => {
                 let {directive, expression, prop} = attribute;
 
@@ -116,9 +120,13 @@ export default class Component {
                         return;
                     }
 
-                    let { output, deps } = self.evaluate(expression)
-                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        x.directives[directive](el, output, attribute, x);
+                    try {
+                        let { output, deps } = self.evaluate(expression)
+                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                            x.directives[directive](el, output, attribute, x);
+                        }
+                    } catch (e) {
+                        x.directives[directive](el, expression, attribute, x, self);
                     }
                 }
             })
