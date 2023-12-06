@@ -126,7 +126,13 @@ export default class Component {
                             x.directives[directive](el, output, attribute, x);
                         }
                     } catch (e) {
-                        x.directives[directive](el, expression, attribute, x, self);
+                        // TODO: bring out the logic to directives/x-for.js
+                        if (/^(\w+)\s+in\s+(\w+)$/.test(expression)) {
+                            const [, items] = expression.split(' in ');
+                            if (self.concernedData.filter(i => [items].includes(i)).length > 0) {
+                                x.directives[directive](el, expression, attribute, x, self);
+                            }
+                        }
                     }
                 }
             })
