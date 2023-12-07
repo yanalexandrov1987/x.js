@@ -25,4 +25,11 @@ import './scripts/directives/x-html';
 import './scripts/directives/x-text';
 import './scripts/directives/x-show';
 
-window.x.start()
+/**
+ * The Methods
+ *
+ * These are the methods that are magically available to all the X.js expressions, within your web app.
+ */
+import './scripts/methods/$fetch';
+
+window.x.start();

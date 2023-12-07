@@ -3,6 +3,7 @@ import { domReady } from './dom'
 
 export const x = {
   directives: {},
+  methods: {},
 
   start: async function () {
     await domReady()
