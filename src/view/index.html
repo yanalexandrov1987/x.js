@@ -29,7 +29,7 @@
       <li x-for="color in colors" x-text="color"></li>
     </ul>
 
-    <div x-data="{items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
+    <div x-data="{data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
       <style>
         body {
           line-height: 150%;
@@ -56,11 +56,18 @@
       <br>
       <br>
 
-      <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, data => console.log(data)).then(r => console.log(r.status))">
+      <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => data = response)">
         <input type="file" name="testFile" placeholder="Choose file">
         <br>
         <button type="submit">Submit</button>
-        <button type="button" @click="$fetch('https://jsonplaceholder.typicode.com/posts', {}, data => console.log(data)).then(r => console.log(r))">Test Fetch</button>
+        <br>
+        <label for="progress">Загрузка файла:</label>
+        <br>
+        <progress id="progress" :value="data.percent" max="100"></progress>
+        <br>
+        <br>
+
+        <button type="button" @click="$fetch('https://jsonplaceholder.typicode.com/posts', {}, data => console.log(data))">Test Fetch</button>
         <ul>
           <li x-for="item in items">
             <span x-text="item.id"></span>

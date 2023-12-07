@@ -1,5 +1,7 @@
 import { method } from '../methods';
 
+const BYTES_IN_MB = 1048576;
+
 method('fetch', (e, el) => (url, options = {}, callback) => {
   let tagName = el.tagName.toLowerCase(),
       method  = tagName === 'form' ? 'post' : 'get',
@@ -49,25 +51,26 @@ method('fetch', (e, el) => (url, options = {}, callback) => {
 });
 
 function onProgress(data) {
-  const BYTES_IN_MB = 1048576;
-  if (data.loaded) {
-    return {
-      start: true,
-      progress: false,
-      end: false,
-      loaded: (data.loaded/BYTES_IN_MB).toFixed(1),
-      total: (data.total/BYTES_IN_MB).toFixed(1),
-      percent: 0,
-    }
-  }
+  let loaded = convertTo(data.loaded || 0),
+      total  = convertTo(data.total || 0);
 
   return {
-    blob: new Blob([data.response]),
-    json: JSON.parse(data.responseText),
-    response: data.response,
-    status: data.status,
-    statusText: data.statusText,
-    text: data.responseText,
-    url: data.responseURL,
+    blob: new Blob([data?.response || '']),
+    json: JSON.parse(data.responseText || '{}'),
+    response: data.response || '',
+    status: data.status || '',
+    statusText: data.statusText || '',
+    text: data.responseText || '',
+    url: data.responseURL || '',
+    start: data.type === 'loadstart',
+    progress: data.type === 'progress',
+    end: data.type === 'loadend',
+    loaded: loaded,
+    total: total,
+    percent: total > 0 ? Math.round(loaded / total * 100) : 0,
   }
+}
+
+function convertTo(number) {
+  return Math.round(number / BYTES_IN_MB * 100) / 100;
 }
