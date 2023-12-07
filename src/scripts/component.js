@@ -1,6 +1,6 @@
-import { saferEval, debounce, getAttributes, updateAttribute } from './utils';
-import { fetchProps, generateExpressionForProp } from './props';
-import { domWalk }   from './dom';
+import { debounce, getAttributes, saferEval, updateAttribute } from "./utils";
+import { fetchProps, generateExpressionForProp } from "./props";
+import { domWalk } from "./dom";
 
 export default class Component {
     constructor(el) {
@@ -164,10 +164,16 @@ export default class Component {
     }
 
     runListenerHandler(expression, e) {
+        const methods = {};
+        Object.keys(x.methods).forEach(key => methods[key] = x.methods[key](e, e.target));
+
         saferEval(expression, this.data, {
-            '$el': e.target,
-            '$event': e,
-            '$refs': this.getRefsProxy()
+            ...{
+                '$el': e.target,
+                '$event': e,
+                '$refs': this.getRefsProxy(),
+            },
+            ...methods
         }, true)
     }
 
