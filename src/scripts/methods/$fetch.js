@@ -39,7 +39,7 @@ method('fetch', (e, el) => (url, options = {}, callback) => {
 
     // regular ajax sending
     xhr.onloadstart = event => callback && callback(onProgress(event));
-    xhr.onload      = event => resolve(() => onProgress(xhr));
+    xhr.onload      = () => resolve(() => onProgress(xhr));
     xhr.onloadend   = event => callback && callback(onProgress(event));
 
     xhr.send(data);
