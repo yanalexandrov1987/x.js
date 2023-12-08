@@ -67,7 +67,7 @@
         <br>
         <br>
 
-        <button type="button" @click.delay.1000.once="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
+        <button type="button" @click.delay.1000ms.once="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
         <ul>
           <li x-for="item in items">
             <span x-text="item.id"></span>
@@ -150,6 +150,14 @@
         <textarea @keyup="content" x.content>Hello World!</textarea>
         <div x-text="content"></div>
       </form>
+
+      <br><br><br><br><br><br><br><br><br><br>
+      <br><br><br><br><br><br><br><br><br><br>
+      <br><br><br><br><br><br><br><br><br><br>
+      <br><br><br><br><br><br><br><br><br><br>
+      <br><br><br><br><br><br><br><br><br><br>
+      <div @load="console.log('I\'m loaded!')"></div>
+      <div @intersect.once="console.log('I\'m being showed!')">Test me</div>
     </div>
 
     <div x-data="{ foo: 'bar', count: '2', hel: '<strong>x-html directive</strong>', test: 'X-text directive', open: false, tab: 'foo' }">

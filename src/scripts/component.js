@@ -140,7 +140,17 @@ export default class Component {
     }
 
     registerListener(el, event, modifiers, expression) {
-        const self = this;
+        const self      = this;
+        const observers = [];
+
+        function removeIntersectionObserver(element) {
+            const index = observers.findIndex(item => item.el === element);
+            if (index >= 0) {
+                const { observer } = observers[index];
+                observer.unobserve(element);
+                observers.splice(index, 1);
+            }
+        }
 
         function eventHandler(e) {
             // delay an event for a certain time
@@ -165,6 +175,10 @@ export default class Component {
                 // one time run event
                 if (modifiers.includes('once')) {
                     el.removeEventListener(event, eventHandler)
+
+                    if (e instanceof IntersectionObserverEntry) {
+                        removeIntersectionObserver(e.target)
+                    }
                 }
             }, wait)()
         }
@@ -183,7 +197,20 @@ export default class Component {
                 this.runListenerHandler(expression, e)
             })
         } else {
-            el.addEventListener(event, eventHandler)
+            if (event === 'load') {
+                eventHandler(new CustomEvent('load', {
+                    detail: {},
+                    bubbles: true,
+                    cancelable: true
+                }));
+            } else if (event === 'intersect') {
+                const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && eventHandler(entry)))
+
+                observer.observe(el);
+                observers.push({el, observer});
+            } else {
+                el.addEventListener(event, eventHandler)
+            }
         }
     }
 
