@@ -140,6 +140,35 @@ export default class Component {
     }
 
     registerListener(el, event, modifiers, expression) {
+        const self = this;
+
+        function eventHandler(e) {
+            // delay an event for a certain time
+            let wait = 0;
+            if (modifiers.includes('delay')) {
+                const delayIndex   = modifiers.indexOf('delay');
+                const numericValue = (modifiers[delayIndex + 1] || '').split('ms')[0];
+                wait = !isNaN(numericValue) ? Number(numericValue) : 250;
+            }
+
+            debounce(() => {
+                if (modifiers.includes('prevent')) {
+                    e.preventDefault();
+                }
+
+                if (modifiers.includes('stop')) {
+                    e.stopPropagation()
+                }
+
+                self.runListenerHandler(expression, e)
+
+                // one time run event
+                if (modifiers.includes('once')) {
+                    el.removeEventListener(event, eventHandler)
+                }
+            }, wait)()
+        }
+
         if (modifiers.includes('outside')) {
             // Listen for this event at the root level.
             document.addEventListener(event, e => {
@@ -154,12 +183,7 @@ export default class Component {
                 this.runListenerHandler(expression, e)
             })
         } else {
-            el.addEventListener(event, e => {
-                if (modifiers.includes('prevent')) e.preventDefault()
-                if (modifiers.includes('stop')) e.stopPropagation()
-
-                this.runListenerHandler(expression, e)
-            })
+            el.addEventListener(event, eventHandler)
         }
     }
 
