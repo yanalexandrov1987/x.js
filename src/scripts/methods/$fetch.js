@@ -26,23 +26,18 @@ method('fetch', (e, el) => (url, options = {}, callback) => {
       break;
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     xhr.open(method, url);
 
     for (const i in options.headers) {
       xhr.setRequestHeader(i, options.headers[i]);
     }
 
-    xhr.onerror         = reject;
     xhr.withCredentials = options.credentials === 'include';
 
-    // send ajax request with file uploading
-    xhr.upload.onprogress = event => callback && callback(onProgress(event));
-
-    // regular ajax sending
-    xhr.onloadstart = event => callback && callback(onProgress(event));
-    xhr.onload      = () => resolve(() => onProgress(xhr));
-    xhr.onloadend   = event => callback && callback(onProgress(event));
+    // regular ajax sending & request with file uploading
+    xhr.onloadstart = xhr.upload.onprogress = event => callback?.(onProgress(event, xhr));
+    xhr.onloadend   = event => resolve(() => callback?.(onProgress(event, xhr)));
 
     xhr.send(data);
   }).then(response => {
@@ -50,24 +45,22 @@ method('fetch', (e, el) => (url, options = {}, callback) => {
   });
 });
 
-function onProgress(data) {
-  let loaded = convertTo(data.loaded || 0),
-      total  = convertTo(data.total || 0);
+function onProgress(event, xhr) {
+  const { loaded = 0, total = 0, type } = event;
+  const { response = '', responseText = '', status = '', responseURL = '' } = xhr;
 
   return {
-    blob: new Blob([data?.response || '']),
-    json: JSON.parse(data.responseText || '{}'),
-    response: data.response || '',
-    status: data.status || '',
-    statusText: data.statusText || '',
-    text: data.responseText || '',
-    url: data.responseURL || '',
-    start: data.type === 'loadstart',
-    progress: data.type === 'progress',
-    end: data.type === 'loadend',
-    loaded: loaded,
-    total: total,
-    percent: total > 0 ? Math.round(loaded / total * 100) : 0,
+    blob: new Blob([response]),
+    json: JSON.parse(responseText || '[]'),
+    raw: response,
+    status,
+    url: responseURL,
+    loaded: convertTo(loaded),
+    total: convertTo(total),
+    percent: total > 0 ? Math.round((loaded / total) * 100) : 0,
+    start: type === 'loadstart',
+    progress: type === 'progress',
+    end: type === 'loadend',
   }
 }
 
