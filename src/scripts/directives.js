@@ -7,6 +7,6 @@ export function directive(name, callback) {
   if (!x.directives[name]) {
     x.directives[name] = callback;
   } else {
-    console.warn(`X.js: You are trying to add a '${name}' directive that already exists.`);
+    console.warn(`X.js: directive '${name}' is already exists.`);
   }
 }
