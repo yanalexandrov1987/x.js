@@ -67,7 +67,7 @@
         <br>
         <br>
 
-        <button type="button" @click="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
+        <button type="button" @click.delay.1000.once="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
         <ul>
           <li x-for="item in items">
             <span x-text="item.id"></span>
