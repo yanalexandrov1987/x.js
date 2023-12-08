@@ -29,7 +29,7 @@
       <li x-for="color in colors" x-text="color"></li>
     </ul>
 
-    <div x-data="{count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
+    <div x-data="{data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
       <style>
         body {
           line-height: 150%;
@@ -51,13 +51,32 @@
           <a :attributes="list.attributes" x-text="list.title"></a>
         </li>
       </ul>
-      <button @click="$fetch('https://jsonplaceholder.typicode.com/posts/1/comments').then(r => console.log(r))">Fetch</button>
-      <button @click="lists = [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello Wow!'}, {attributes: {href: '#', target: '_blank'}, title: 'My name is...'}]">Change List</button>
+      <button @click="lists = [{attributes: {href: 'https://jsonplaceholder.typicode.com/posts/1/comments', target: '_blank'}, title: 'Hello Wow!'}, {attributes: {href: '#', target: '_blank'}, title: 'My name is...'}]">Change List</button>
       <br>
       <br>
       <br>
 
-      <form @submit.prevent="count++">
+      <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => data = response).then(r => console.log(r))">
+        <input type="file" name="testFile" placeholder="Choose file">
+        <br>
+        <button type="submit">Submit</button>
+        <br>
+        <label for="progress">Загрузка файла:</label>
+        <br>
+        <progress id="progress" :value="data.percent" max="100"></progress>
+        <br>
+        <br>
+
+        <button type="button" @click="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
+        <ul>
+          <li x-for="item in items">
+            <span x-text="item.id"></span>
+            <a x-text="item.title"></a>
+          </li>
+        </ul>
+        <br>
+        <br>
+        <br>
         <div>
           inputo
         </div>
@@ -130,8 +149,6 @@
         </div>
         <textarea @keyup="content" x.content>Hello World!</textarea>
         <div x-text="content"></div>
-        <br>
-        <button type="submit">Submit</button>
       </form>
     </div>
 
