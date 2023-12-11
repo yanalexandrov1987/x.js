@@ -101,10 +101,11 @@ document.addEventListener('x:refresh', ({detail}) => {
   const { modifiers, prop } = detail.attribute;
   if (['cookie', 'local'].some(modifier => modifiers.includes(modifier))) {
     const type   = modifiers.includes('cookie') ? 'cookie' : 'local';
-    const expire = getNextModifier(modifiers, type, '1y');
+    const expire = getNextModifier(modifiers, type);
     if (detail.output) {
       storage.set(prop, detail.output, type,{
-        expires: computeExpires(expire)
+        expires: computeExpires(expire),
+        secure: true,
       });
     } else {
       storage.set(prop, null, type, {expires: new Date(), path: '/' })
