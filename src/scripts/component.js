@@ -94,41 +94,39 @@ export default class Component {
 
     refresh() {
         const self = this;
-        const walkThenClearDependencyTracker = (rootEl, callback) => {
-            domWalk(rootEl, callback)
+        debounce(() => {
+            domWalk(self.el, el => {
+                getAttributes(el).forEach(attribute => {
+                    let {directive, expression, prop} = attribute;
+
+                    if (prop) {
+                        let { output, deps } = self.evaluate(prop)
+                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                            updateAttribute(el, 'value', output);
+
+                            document.dispatchEvent(eventCreate('x:refreshed', {attribute, output}));
+                        }
+                    }
+
+                    if (directive in x.directives) {
+                        let output = expression,
+                          deps   = [];
+                        if (directive !== 'x-for') {
+                            try {
+                                ({ output, deps } = self.evaluate(expression));
+                            } catch (error) {}
+                        } else {
+                            [, deps] = expression.split(' in ');
+                        }
+                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                            x.directives[directive](el, output, attribute, x, self);
+                        }
+                    }
+                })
+            })
 
             self.concernedData = []
-        }
-
-        debounce(walkThenClearDependencyTracker, 0)(self.el, el => {
-            getAttributes(el).forEach(attribute => {
-                let {directive, expression, prop} = attribute;
-
-                if (prop) {
-                    let { output, deps } = self.evaluate(prop)
-                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        updateAttribute(el, 'value', output);
-
-                        document.dispatchEvent(eventCreate('x:refreshed', {attribute, output}));
-                    }
-                }
-
-                if (directive in x.directives) {
-                    let output = expression,
-                        deps   = [];
-                    if (directive !== 'x-for') {
-                        try {
-                            ({ output, deps } = self.evaluate(expression));
-                        } catch (error) {}
-                    } else {
-                        [, deps] = expression.split(' in ');
-                    }
-                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        x.directives[directive](el, output, attribute, x, self);
-                    }
-                }
-            })
-        })
+        }, 0)()
     }
 
     registerListener(el, event, modifiers, expression) {
