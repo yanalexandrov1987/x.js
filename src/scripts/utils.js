@@ -24,13 +24,14 @@ export function getAttributes(el) {
   const regexp = /^(x-|x.|@|:)/;
   return [...el.attributes].filter(({ name }) => regexp.test(name)).map(({ name, value }) => {
     const startsWith = name.match(regexp)[0];
+    const parts      = startsWith === 'x.' ? name.replace('x.', '').split('.') : [];
     return {
       attribute: name,
       directive: startsWith === 'x-' ? name : (startsWith === ':' ? 'x-bind' : ''),
       event: startsWith === '@' ? name.replace('@', '').split('.')[0] : '',
       expression: value,
-      modifiers: name.replace('x.', '').split('.').slice(1),
-      prop: startsWith === 'x.' ? name.replace('x.', '') : ''
+      modifiers: parts.slice(1),
+      prop: parts.shift() ?? ''
     }
   });
 }
@@ -66,4 +67,16 @@ export function updateSelect(el, value) {
   Array.from(el.options).forEach(option => {
     option.selected = arrayWrappedValue.includes(option.value || option.text)
   })
+}
+
+export function eventCreate(eventName, detail = {}) {
+  return new CustomEvent(eventName, {
+    detail,
+    bubbles: true,
+    cancelable: true
+  })
+}
+
+export function getNextModifier(modifiers, modifier, defaultValue = '') {
+  return modifiers[modifiers.indexOf(modifier) + 1] || defaultValue;
 }

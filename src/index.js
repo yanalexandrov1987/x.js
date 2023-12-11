@@ -14,6 +14,12 @@ import { x } from './scripts/index';
 window.x = x;
 
 /**
+ * A client-side properties storage system.
+ * X.js watch property changes and overwrites them to the repositories.
+ */
+import './scripts/storage';
+
+/**
  * The Directives
  *
  * Now that the core is all set up, we can register X directives like x-text or

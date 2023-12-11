@@ -1,13 +1,13 @@
-import { debounce, getAttributes, saferEval, updateAttribute } from "./utils";
-import { fetchProps, generateExpressionForProp } from "./props";
-import { domWalk } from "./dom";
+import { debounce, getAttributes, saferEval, updateAttribute, eventCreate } from './utils';
+import { fetchProps, generateExpressionForProp } from './props';
+import { domWalk } from './dom';
 
 export default class Component {
     constructor(el) {
         this.el      = el
         this.rawData = saferEval(el.getAttribute('x-data') || '{}', {})
+        this.rawData = fetchProps(el, this.rawData)
         this.data    = this.wrapDataInObservable(this.rawData)
-        this.data    = fetchProps(el, this.data)
 
         this.initialize(el, this.data)
     }
@@ -32,9 +32,9 @@ export default class Component {
     }
 
     wrapDataInObservable(data) {
-        this.concernedData = []
-
         let self = this
+
+        self.concernedData = []
         return new Proxy(data, {
             set(obj, property, value) {
                 const setWasSuccessful = Reflect.set(obj, property, value)
@@ -86,7 +86,6 @@ export default class Component {
 
                     try {
                         let { output } = self.evaluate(expression, additionalHelperVariables);
-
                         x.directives[directive](el, output, attribute, x);
                     } catch (e) {
                         x.directives[directive](el, expression, attribute, x, self);
@@ -104,14 +103,16 @@ export default class Component {
             self.concernedData = []
         }
 
-        debounce(walkThenClearDependencyTracker, 5)(self.el, el => {
+        debounce(walkThenClearDependencyTracker, 0)(self.el, el => {
             getAttributes(el).forEach(attribute => {
                 let {directive, expression, prop} = attribute;
 
                 if (prop) {
                     let { output, deps } = self.evaluate(prop)
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        updateAttribute(el, 'value', output)
+                        updateAttribute(el, 'value', output);
+
+                        document.dispatchEvent(eventCreate('x:refresh', {attribute, output}));
                     }
                 }
 
@@ -198,11 +199,13 @@ export default class Component {
             })
         } else {
             if (event === 'load') {
-                eventHandler(new CustomEvent('load', {
-                    detail: {},
-                    bubbles: true,
-                    cancelable: true
-                }));
+                eventHandler(
+                    new CustomEvent('load', {
+                        detail: {},
+                        bubbles: true,
+                        cancelable: true
+                    })
+                );
             } else if (event === 'intersect') {
                 const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && eventHandler(entry)))
 
