@@ -22,7 +22,7 @@ export function fetchProps(rootElement, data) {
           data[prop] = saferEval(modelExpression, data, {'$el': el})
         }
 
-        document.dispatchEvent(eventCreate('x:prop', {el, data, attribute}))
+        document.dispatchEvent(eventCreate('x:fetched', {el, data, attribute}))
       }
     })
   })

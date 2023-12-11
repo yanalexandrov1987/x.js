@@ -102,10 +102,14 @@ function isStorageModifier(modifiers) {
   return ['cookie', 'local'].some(modifier => modifiers.includes(modifier))
 }
 
+function getStorageType(modifiers) {
+  return modifiers.includes('cookie') ? 'cookie' : 'local'
+}
+
 document.addEventListener('x:refreshed', ({detail}) => {
   const { modifiers, prop } = detail.attribute;
   if (isStorageModifier(modifiers)) {
-    const type   = modifiers.includes('cookie') ? 'cookie' : 'local';
+    const type   = getStorageType(modifiers);
     const expire = getNextModifier(modifiers, type);
     if (detail.output) {
       storage.set(prop, detail.output, type,{
@@ -118,12 +122,12 @@ document.addEventListener('x:refreshed', ({detail}) => {
   }
 });
 
-document.addEventListener('x:prop', ({detail}) => {
+document.addEventListener('x:fetched', ({detail}) => {
   const { el, data, attribute: { modifiers, prop } } = detail;
 
   let tag = el.tagName.toLowerCase();
-  if (isStorageModifier(modifiers) && ['input', 'select', 'textarea'].includes(tag)) {
-    const type  = modifiers.includes('cookie') ? 'cookie' : 'local';
+  if (['input', 'select', 'textarea'].includes(tag) && isStorageModifier(modifiers)) {
+    const type  = getStorageType(modifiers);
     const value = storage.get(prop, type);
 
     // TODO: check by value type
