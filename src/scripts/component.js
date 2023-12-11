@@ -189,13 +189,7 @@ export default class Component {
             })
         } else {
             if (event === 'load') {
-                eventHandler(
-                    new CustomEvent('load', {
-                        detail: {},
-                        bubbles: true,
-                        cancelable: true
-                    })
-                );
+                eventHandler(eventCreate('load',{}));
             } else if (event === 'intersect') {
                 const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && eventHandler(entry)))
 
