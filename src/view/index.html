@@ -29,7 +29,7 @@
       <li x-for="color in colors" x-text="color"></li>
     </ul>
 
-    <div x-data="{data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
+    <div x-data="{viewed: false, data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
       <style>
         body {
           line-height: 150%;
@@ -75,6 +75,14 @@
           </li>
         </ul>
         <br>
+        <br>
+        <div>
+          Accept cookie
+        </div>
+        <div x.viewed.cookie.1m x-show="viewed !== true" hidden>
+          <span>We use cookie!</span>
+          <button type="button" @click="viewed = !viewed">Ok, accepted</button>
+        </div>
         <br>
         <div>
           cookie
