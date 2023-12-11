@@ -27,7 +27,7 @@ export function fetchProps(rootElement, data) {
 }
 
 export function generateExpressionForProp(el, data, prop, modifiers) {
-  let rightSideOfExpression = '', tag = el.tagName.toLowerCase();
+  let rightSideOfExpression, tag = el.tagName.toLowerCase();
   if (el.type === 'checkbox') {
     // If the data we are binding to is an array, toggle it's value inside the array.
     if (Array.isArray(data[prop])) {

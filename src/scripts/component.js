@@ -1,4 +1,4 @@
-import { debounce, getAttributes, saferEval, updateAttribute, eventCreate } from './utils';
+import { debounce, getAttributes, saferEval, updateAttribute, eventCreate, getNextModifier } from './utils';
 import { fetchProps, generateExpressionForProp } from './props';
 import { domWalk } from './dom';
 
@@ -79,11 +79,7 @@ export default class Component {
                 }
 
                 // init directives
-                if (directive) {
-                    if (!Object.keys(x.directives).includes(directive)) {
-                        return;
-                    }
-
+                if (directive in x.directives) {
                     let output = expression;
                     if (directive !== 'x-for') {
                         try {
@@ -117,24 +113,18 @@ export default class Component {
                     }
                 }
 
-                if (directive) {
-                    if (!Object.keys(x.directives).includes(directive)) {
-                        return;
+                if (directive in x.directives) {
+                    let output = expression,
+                        deps   = [];
+                    if (directive !== 'x-for') {
+                        try {
+                            ({ output, deps } = self.evaluate(expression));
+                        } catch (error) {}
+                    } else {
+                        [, deps] = expression.split(' in ');
                     }
-
-                    try {
-                        let { output, deps } = self.evaluate(expression)
-                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                            x.directives[directive](el, output, attribute, x);
-                        }
-                    } catch (e) {
-                        // TODO: bring out the logic to directives/x-for.js
-                        if (/^(\w+)\s+in\s+(\w+)$/.test(expression)) {
-                            const [, items] = expression.split(' in ');
-                            if (self.concernedData.filter(i => [items].includes(i)).length > 0) {
-                                x.directives[directive](el, expression, attribute, x, self);
-                            }
-                        }
+                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                        x.directives[directive](el, output, attribute, x, self);
                     }
                 }
             })
@@ -158,8 +148,7 @@ export default class Component {
             // delay an event for a certain time
             let wait = 0;
             if (modifiers.includes('delay')) {
-                const delayIndex   = modifiers.indexOf('delay');
-                const numericValue = (modifiers[delayIndex + 1] || '').split('ms')[0];
+                const numericValue = getNextModifier(modifiers, 'delay').split('ms')[0];
                 wait = !isNaN(numericValue) ? Number(numericValue) : 250;
             }
 
