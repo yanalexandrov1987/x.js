@@ -84,12 +84,13 @@ export default class Component {
                         return;
                     }
 
-                    try {
-                        let { output } = self.evaluate(expression, additionalHelperVariables);
-                        x.directives[directive](el, output, attribute, x);
-                    } catch (e) {
-                        x.directives[directive](el, expression, attribute, x, self);
+                    let output = expression;
+                    if (directive !== 'x-for') {
+                        try {
+                            ({ output } = self.evaluate(expression, additionalHelperVariables));
+                        } catch (error) {}
                     }
+                    x.directives[directive](el, output, attribute, x, self);
                 }
             })
         })
