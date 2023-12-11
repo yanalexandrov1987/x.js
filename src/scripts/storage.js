@@ -1,26 +1,27 @@
 import { getNextModifier } from './utils';
 
 const storage = {
-  get: (name) => {
-    if (!name) return undefined;
+  get: (name, type) => {
+    if (!name) return;
 
-    /**
-     * Returns cookie with specified name (str) if exists, else - undefined
-     * if returning value is JSON and json parameter is true, returns json, otherwise str
-     */
-    let matches = document.cookie.match(new RegExp(
-      "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
-    ));
-    if (matches) {
-      let res = decodeURIComponent(matches[1]);
-      try {
-        return JSON.parse(res);
-      } catch(e) {
-        return res;
+    if (type === 'cookie') {
+      let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + "=([^;]*)"
+      ));
+
+      if (matches) {
+        let res = decodeURIComponent(matches[1]);
+        try {
+          return JSON.parse(res);
+        } catch(e) {
+          return res;
+        }
       }
     }
 
-    return undefined;
+    if (type === 'local') {
+      return localStorage.getItem(name);
+    }
   },
   set: (name, value, type, options = {path: '/'}) => {
     if (!name) return;
@@ -97,9 +98,13 @@ function computeExpires(str) {
   return date;
 }
 
-document.addEventListener('x:refresh', ({detail}) => {
+function isStorageModifier(modifiers) {
+  return ['cookie', 'local'].some(modifier => modifiers.includes(modifier))
+}
+
+document.addEventListener('x:refreshed', ({detail}) => {
   const { modifiers, prop } = detail.attribute;
-  if (['cookie', 'local'].some(modifier => modifiers.includes(modifier))) {
+  if (isStorageModifier(modifiers)) {
     const type   = modifiers.includes('cookie') ? 'cookie' : 'local';
     const expire = getNextModifier(modifiers, type);
     if (detail.output) {
@@ -109,6 +114,21 @@ document.addEventListener('x:refresh', ({detail}) => {
       });
     } else {
       storage.set(prop, null, type, {expires: new Date(), path: '/' })
+    }
+  }
+});
+
+document.addEventListener('x:prop', ({detail}) => {
+  const { el, data, attribute: { modifiers, prop } } = detail;
+
+  let tag = el.tagName.toLowerCase();
+  if (isStorageModifier(modifiers) && ['input', 'select', 'textarea'].includes(tag)) {
+    const type  = modifiers.includes('cookie') ? 'cookie' : 'local';
+    const value = storage.get(prop, type);
+
+    // TODO: check by value type
+    if (typeof value !== 'undefined') {
+      data[prop] = value;
     }
   }
 });

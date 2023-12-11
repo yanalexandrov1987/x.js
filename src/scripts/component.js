@@ -109,7 +109,7 @@ export default class Component {
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
                         updateAttribute(el, 'value', output);
 
-                        document.dispatchEvent(eventCreate('x:refresh', {attribute, output}));
+                        document.dispatchEvent(eventCreate('x:refreshed', {attribute, output}));
                     }
                 }
 

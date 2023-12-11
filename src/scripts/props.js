@@ -1,10 +1,11 @@
-import { getAttributes, saferEval } from './utils';
+import { eventCreate, getAttributes, saferEval } from "./utils";
 import { domWalk } from './dom';
 
 export function fetchProps(rootElement, data) {
   const checkboxes = {};
   domWalk(rootElement, el => {
-    getAttributes(el).forEach(({prop, modifiers}) => {
+    getAttributes(el).forEach(attribute => {
+      let {modifiers, prop} = attribute;
       if (prop) {
         let keys;
 
@@ -20,6 +21,8 @@ export function fetchProps(rootElement, data) {
         if (!Array.isArray(keys) || keys.length === 1) {
           data[prop] = saferEval(modelExpression, data, {'$el': el})
         }
+
+        document.dispatchEvent(eventCreate('x:prop', {el, data, attribute}))
       }
     })
   })
@@ -36,9 +39,9 @@ export function generateExpressionForProp(el, data, prop, modifiers) {
       rightSideOfExpression = `$el.checked`
     }
   } else if (tag === 'select' && el.multiple) {
-    rightSideOfExpression = modifiers.includes('number')
-      ? 'Array.from($el.selectedOptions).map(option => parseFloat(option.value || option.text))'
-      : 'Array.from($el.selectedOptions).map(option => option.value || option.text)'
+    rightSideOfExpression = `Array.from($el.selectedOptions).map(option => ${modifiers.includes('number')
+      ? 'parseFloat(option.value || option.text)'
+      : 'option.value || option.text'})`
   } else {
     rightSideOfExpression = modifiers.includes('number')
       ? 'parseFloat($el.value)'
