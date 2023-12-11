@@ -1,4 +1,4 @@
-import { eventCreate, getAttributes, saferEval } from "./utils";
+import { eventCreate, getAttributes, saferEval } from './utils';
 import { domWalk } from './dom';
 
 export function fetchProps(rootElement, data) {
