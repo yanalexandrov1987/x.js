@@ -145,6 +145,14 @@ export default class Component {
         }
 
         function eventHandler(e) {
+            if (modifiers.includes('prevent')) {
+                e.preventDefault();
+            }
+
+            if (modifiers.includes('stop')) {
+                e.stopPropagation()
+            }
+
             // delay an event for a certain time
             let wait = 0;
             if (modifiers.includes('delay')) {
@@ -153,14 +161,6 @@ export default class Component {
             }
 
             debounce(() => {
-                if (modifiers.includes('prevent')) {
-                    e.preventDefault();
-                }
-
-                if (modifiers.includes('stop')) {
-                    e.stopPropagation()
-                }
-
                 self.runListenerHandler(expression, e)
 
                 // one time run event
