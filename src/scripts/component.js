@@ -65,14 +65,16 @@ export default class Component {
                 if (prop) {
                     // If the element we are binding to is a select, a radio, or checkbox
                     // we'll listen for the change event instead of the "input" event.
-                    let event = (el.tagName.toLowerCase() === 'select')
-                    || ['checkbox', 'radio'].includes(el.type)
+                    let event = ['select-multiple', 'select', 'checkbox', 'radio'].includes(el.type)
                     || modifiers.includes('lazy')
-                      ? 'change' : 'input'
+                      ? 'change' : 'input';
 
-                    const listenerExpression = generateExpressionForProp(el, data, prop, modifiers)
-
-                    self.registerListener(el, event, modifiers, listenerExpression)
+                    self.registerListener(
+                      el,
+                      event,
+                      modifiers,
+                      generateExpressionForProp(el, data, prop, modifiers)
+                    );
 
                     let { output } = self.evaluate(prop, additionalHelperVariables)
                     updateAttribute(el, 'value', output)
@@ -104,7 +106,9 @@ export default class Component {
                         if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
                             updateAttribute(el, 'value', output);
 
-                            document.dispatchEvent(eventCreate('x:refreshed', {attribute, output}));
+                            document.dispatchEvent(
+                              eventCreate('x:refreshed', {attribute, output})
+                            );
                         }
                     }
 
