@@ -76,8 +76,7 @@ const storage = {
 
 function computeExpires(str) {
   let lastCh = str.charAt(str.length - 1),
-      value  = parseInt(str, 10),
-      date   = new Date();
+      value  = parseInt(str, 10);
 
   const methods = {
     y: 'FullYear',
@@ -86,16 +85,17 @@ function computeExpires(str) {
     h: 'Hours',
     i: 'Minutes',
     s: 'Seconds',
-  };
-
-  if (methods.hasOwnProperty(lastCh)) {
-    const method = methods[lastCh];
-    date[`set${method}`](date[`get${method}`]() + value);
-  } else {
-    date = new Date(str);
   }
 
-  return date;
+  if (lastCh in methods) {
+    const date   = new Date();
+    const method = methods[lastCh];
+    date[`set${method}`](date[`get${method}`]() + value);
+
+    return date;
+  }
+
+  return null;
 }
 
 function isStorageModifier(modifiers) {
