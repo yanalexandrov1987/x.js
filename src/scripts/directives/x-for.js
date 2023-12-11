@@ -17,15 +17,14 @@ directive('for', (el, expression, attribute, x, component) => {
     sibling = nextSibling;
   }
 
-  dataItems.forEach(dataItem => {
+  dataItems.forEach((dataItem, key) => {
     const clone = el.cloneNode(true);
 
     clone.removeAttribute('x-for');
 
-    (async function() {
-      await component.initialize(clone, component.data, {[item]: dataItem});
+    (async () => {
+      await component.initialize(clone, component.data, {[item]: dataItem, key});
 
-      clone.__x_data = dataItem;
       el.parentNode.appendChild(clone);
     })();
   });
