@@ -1,13 +1,13 @@
-import { debounce, getAttributes, saferEval, updateAttribute } from "./utils";
-import { fetchProps, generateExpressionForProp } from "./props";
-import { domWalk } from "./dom";
+import { debounce, getAttributes, saferEval, updateAttribute, eventCreate, getNextModifier } from './utils';
+import { fetchProps, generateExpressionForProp } from './props';
+import { domWalk } from './dom';
 
 export default class Component {
     constructor(el) {
         this.el      = el
         this.rawData = saferEval(el.getAttribute('x-data') || '{}', {})
+        this.rawData = fetchProps(el, this.rawData)
         this.data    = this.wrapDataInObservable(this.rawData)
-        this.data    = fetchProps(el, this.data)
 
         this.initialize(el, this.data)
     }
@@ -32,9 +32,9 @@ export default class Component {
     }
 
     wrapDataInObservable(data) {
-        this.concernedData = []
-
         let self = this
+
+        self.concernedData = []
         return new Proxy(data, {
             set(obj, property, value) {
                 const setWasSuccessful = Reflect.set(obj, property, value)
@@ -79,18 +79,14 @@ export default class Component {
                 }
 
                 // init directives
-                if (directive) {
-                    if (!Object.keys(x.directives).includes(directive)) {
-                        return;
+                if (directive in x.directives) {
+                    let output = expression;
+                    if (directive !== 'x-for') {
+                        try {
+                            ({ output } = self.evaluate(expression, additionalHelperVariables));
+                        } catch (error) {}
                     }
-
-                    try {
-                        let { output } = self.evaluate(expression, additionalHelperVariables);
-
-                        x.directives[directive](el, output, attribute, x);
-                    } catch (e) {
-                        x.directives[directive](el, expression, attribute, x, self);
-                    }
+                    x.directives[directive](el, output, attribute, x, self);
                 }
             })
         })
@@ -104,35 +100,31 @@ export default class Component {
             self.concernedData = []
         }
 
-        debounce(walkThenClearDependencyTracker, 5)(self.el, el => {
+        debounce(walkThenClearDependencyTracker, 0)(self.el, el => {
             getAttributes(el).forEach(attribute => {
                 let {directive, expression, prop} = attribute;
 
                 if (prop) {
                     let { output, deps } = self.evaluate(prop)
                     if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                        updateAttribute(el, 'value', output)
+                        updateAttribute(el, 'value', output);
+
+                        document.dispatchEvent(eventCreate('x:refreshed', {attribute, output}));
                     }
                 }
 
-                if (directive) {
-                    if (!Object.keys(x.directives).includes(directive)) {
-                        return;
+                if (directive in x.directives) {
+                    let output = expression,
+                        deps   = [];
+                    if (directive !== 'x-for') {
+                        try {
+                            ({ output, deps } = self.evaluate(expression));
+                        } catch (error) {}
+                    } else {
+                        [, deps] = expression.split(' in ');
                     }
-
-                    try {
-                        let { output, deps } = self.evaluate(expression)
-                        if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
-                            x.directives[directive](el, output, attribute, x);
-                        }
-                    } catch (e) {
-                        // TODO: bring out the logic to directives/x-for.js
-                        if (/^(\w+)\s+in\s+(\w+)$/.test(expression)) {
-                            const [, items] = expression.split(' in ');
-                            if (self.concernedData.filter(i => [items].includes(i)).length > 0) {
-                                x.directives[directive](el, expression, attribute, x, self);
-                            }
-                        }
+                    if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
+                        x.directives[directive](el, output, attribute, x, self);
                     }
                 }
             })
@@ -153,23 +145,22 @@ export default class Component {
         }
 
         function eventHandler(e) {
+            if (modifiers.includes('prevent')) {
+                e.preventDefault();
+            }
+
+            if (modifiers.includes('stop')) {
+                e.stopPropagation()
+            }
+
             // delay an event for a certain time
             let wait = 0;
             if (modifiers.includes('delay')) {
-                const delayIndex   = modifiers.indexOf('delay');
-                const numericValue = (modifiers[delayIndex + 1] || '').split('ms')[0];
+                const numericValue = getNextModifier(modifiers, 'delay').split('ms')[0];
                 wait = !isNaN(numericValue) ? Number(numericValue) : 250;
             }
 
             debounce(() => {
-                if (modifiers.includes('prevent')) {
-                    e.preventDefault();
-                }
-
-                if (modifiers.includes('stop')) {
-                    e.stopPropagation()
-                }
-
                 self.runListenerHandler(expression, e)
 
                 // one time run event
@@ -198,11 +189,13 @@ export default class Component {
             })
         } else {
             if (event === 'load') {
-                eventHandler(new CustomEvent('load', {
-                    detail: {},
-                    bubbles: true,
-                    cancelable: true
-                }));
+                eventHandler(
+                    new CustomEvent('load', {
+                        detail: {},
+                        bubbles: true,
+                        cancelable: true
+                    })
+                );
             } else if (event === 'intersect') {
                 const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && eventHandler(entry)))
 
