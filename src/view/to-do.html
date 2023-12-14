@@ -15,7 +15,7 @@
       <span x-text="`${++key} ${task}`"></span><i @click="(() => console.log(tasks[key]))()">Remove</i>
     </li>
   </ul>
-  <button x-show="tasks.length" @click="tasks = []" x-cloak hidden>Clear all</button>
+  <button type="button" x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
   <br>
   <br>
 
