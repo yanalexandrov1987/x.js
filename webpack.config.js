@@ -11,16 +11,17 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const generateHtmlPlugin = dir => {
   const files = fs.readdirSync(path.resolve(__dirname, dir));
 
-  return files.reduce(item => {
-    const [name, extension] = item.split('.');
+  return files.reduce((acc, file) => {
+    const [name, extension] = file.split('.');
     if (extension) {
-      return new HtmlWebpackPlugin({
+      acc.push(new HtmlWebpackPlugin({
         filename: `${name}.html`,
         template: path.resolve(__dirname, `${dir}/${name}.${extension}`),
         inject: false,
-      });
+      }));
     }
-  });
+    return acc;
+  }, []);
 }
 
 module.exports = {
@@ -40,10 +41,21 @@ module.exports = {
     open: true,
     hot: true,
     compress: true,
-    historyApiFallback: true,
+    historyApiFallback: {
+      rewrites: fs.readdirSync(path.resolve(__dirname, 'src/view')).map(file => {
+        const [name, extension] = file.split('.');
+
+        if (extension === 'html') {
+          return { from: new RegExp(`^\\/${name}`), to: `/${file}` };
+        } else if ( name === 'index' ) {
+          return { from: /./, to: `/${name}/index.html` };
+        }
+        return null;
+      }).filter(item => item !== null),
+    },
   },
   performance : {
-    hints : false
+    hints: false
   },
   mode: 'production',
   optimization: {

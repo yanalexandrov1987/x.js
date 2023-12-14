@@ -1,0 +1,25 @@
+<% var data = {
+  title: "To Do List"
+}; %>
+<%= _.template(require('./parts/header.html').default)(data) %>
+
+<form x-data="{ tasks: [] }">
+  Add task:<br>
+  <input placeholder="Add new task..." x.value />
+  <button type="button" @click="tasks = tasks.concat(value); value = ''" :disabled="!value.trim()">Create</button>
+  <br>
+  <br>
+  Tasks list:
+  <ul>
+    <li x-for="task in tasks">
+      <span x-text="`${++key} ${task}`"></span><i @click="(() => console.log(tasks[key]))()">Remove</i>
+    </li>
+  </ul>
+  <button type="button" x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
+  <br>
+  <br>
+
+  <button type="submit">Submit From</button>
+</form>
+
+<%= _.template(require('./parts/footer.html').default)(data) %>
