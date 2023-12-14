@@ -129,8 +129,6 @@ document.addEventListener('x:fetched', ({detail}) => {
   if (['input', 'select', 'textarea'].includes(tag) && isStorageModifier(modifiers)) {
     const type  = getStorageType(modifiers);
     const value = storage.get(prop, type);
-
-    // TODO: check by value type
     if (typeof value !== 'undefined') {
       data[prop] = value;
     }
