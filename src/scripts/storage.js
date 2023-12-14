@@ -111,6 +111,7 @@ document.addEventListener('x:refreshed', ({detail}) => {
   if (isStorageModifier(modifiers)) {
     const type   = getStorageType(modifiers);
     const expire = getNextModifier(modifiers, type);
+    console.log(detail)
     if (detail.output) {
       storage.set(prop, detail.output, type,{
         expires: computeExpires(expire),
