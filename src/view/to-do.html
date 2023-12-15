@@ -3,23 +3,20 @@
 }; %>
 <%= _.template(require('./parts/header.html').default)(data) %>
 
-<form x-data="{ tasks: [] }">
-  Add task:<br>
+<div x-data="{ tasks: [] }">
+  <div>Add task:</div>
   <input placeholder="Add new task..." x.value />
-  <button type="button" @click="tasks = tasks.concat(value); value = ''" :disabled="!value.trim()">Create</button>
+  <button type="button" @click="tasks = tasks.concat(value); value = ''" :disabled="!value.trim()">Add</button>
   <br>
   <br>
-  Tasks list:
+
+  <div>Tasks list:</div>
   <ul>
     <li x-for="task in tasks">
       <span x-text="`${++key} ${task}`"></span><i @click="(() => console.log(tasks[key]))()">Remove</i>
     </li>
   </ul>
   <button type="button" x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
-  <br>
-  <br>
-
-  <button type="submit">Submit From</button>
-</form>
+</div>
 
 <%= _.template(require('./parts/footer.html').default)(data) %>
