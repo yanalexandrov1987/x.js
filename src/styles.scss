@@ -164,6 +164,7 @@ code {
 	@media ( max-width: 1024px ){
 		flex-direction: column;
 		min-height: initial;
+		padding: 32px;
 
 		&__side {
 			height: inherit;
