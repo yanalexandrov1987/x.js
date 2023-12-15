@@ -8,24 +8,20 @@
   <input type="text" x.text.cookie>
   <div x-text="text"></div>
   <br>
-  <br>
 
   <div>Textarea</div>
-  <textarea @keyup="content" x.textarea.cookie></textarea>
+  <textarea x.textarea.cookie></textarea>
   <div x-text="textarea"></div>
-  <br>
   <br>
 
   <div>Input Range</div>
   <input type="range" step="1" min="0" max="100" x.range.cookie>
   <div x-text="range"></div>
   <br>
-  <br>
 
   <div>Single checkbox</div>
   <input type="checkbox" x.checkbox.cookie>
   <div x-text="checkbox"></div>
-  <br>
   <br>
 
   <div>Multiple checkboxes</div>
@@ -33,13 +29,11 @@
   <input type="checkbox" value="Checkbox Two" x.checkboxes.cookie>
   <div x-text="checkboxes"></div>
   <br>
-  <br>
 
   <div>Radio inputs</div>
   <input type="radio" value="yes" x.radio.cookie>
   <input type="radio" value="no" x.radio.cookie>
   <div x-text="radio"></div>
-  <br>
   <br>
 
   <div>Select</div>
@@ -51,7 +45,6 @@
   </select>
   <div x-text="select"></div>
   <br>
-  <br>
 
   <div>Multiple Select</div>
   <select multiple x.multiselect.cookie>
@@ -61,10 +54,6 @@
     <option value="Value 3">Value 3</option>
   </select>
   <div x-text="multiselect"></div>
-  <br>
-  <br>
-
-  <button type="submit">Submit From</button>
 </form>
 
 <%= _.template(require('./parts/footer.html').default)(data) %>
