@@ -81,3 +81,32 @@ export function eventCreate(eventName, detail = {}) {
 export function getNextModifier(modifiers, modifier, defaultValue = '') {
   return modifiers[modifiers.indexOf(modifier) + 1] || defaultValue;
 }
+
+export function isInputField(el) {
+  return ['input', 'select', 'textarea'].includes(el.tagName.toLowerCase());
+}
+
+export function castToType(a, value) {
+  const typeMap = {
+    boolean: Boolean,
+    string: String,
+    number: a => Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value),
+    object: a => {
+      if (a instanceof Date) {
+        return new Date(value);
+      } else if (Array.isArray(a)) {
+        return Array.from(value);
+      } else {
+        return Object(value);
+      }
+    },
+    undefined: (a, value) => value === 'true' ? true : ( value === 'false' ? false : value ),
+  };
+
+  const type = typeof a;
+  if (typeMap[type]) {
+    return typeMap[type](a, value);
+  }
+
+  return value;
+}

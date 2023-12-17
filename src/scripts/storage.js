@@ -1,4 +1,4 @@
-import { getNextModifier } from './utils';
+import { castToType, getNextModifier } from "./utils";
 
 const storage = {
   get: (name, type) => {
@@ -108,6 +108,7 @@ function getStorageType(modifiers) {
 
 document.addEventListener('x:refreshed', ({detail}) => {
   const { modifiers, prop } = detail.attribute;
+
   if (isStorageModifier(modifiers)) {
     const type   = getStorageType(modifiers);
     const expire = getNextModifier(modifiers, type);
@@ -123,14 +124,15 @@ document.addEventListener('x:refreshed', ({detail}) => {
 });
 
 document.addEventListener('x:fetched', ({detail}) => {
-  const { el, data, attribute: { modifiers, prop } } = detail;
+  const { data, attribute: { modifiers, prop } } = detail;
 
-  let tag = el.tagName.toLowerCase();
-  if (['input', 'select', 'textarea'].includes(tag) && isStorageModifier(modifiers)) {
+  if (isStorageModifier(modifiers)) {
     const type  = getStorageType(modifiers);
     const value = storage.get(prop, type);
-    if (typeof value !== 'undefined') {
-      data[prop] = value;
-    }
+
+    console.log(data)
+    console.log(typeof data[prop])
+    console.log(value)
+    data[prop] = castToType(data[prop], value);
   }
 });
