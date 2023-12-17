@@ -7,7 +7,6 @@ export default class Component {
     this.el      = el
     this.rawData = saferEval(el.getAttribute('x-data') || '{}', {})
     this.rawData = fetchProps(el, this.rawData)
-    console.log(this.rawData)
     this.data    = this.wrapDataInObservable(this.rawData)
 
     this.initialize(el, this.data)
