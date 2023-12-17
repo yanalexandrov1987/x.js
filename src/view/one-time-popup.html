@@ -1,0 +1,20 @@
+<% var data = {
+  title: "One Time Pop Up"
+}; %>
+<%= _.template(require('./parts/header.html').default)(data) %>
+
+<div x-data>
+  <p>Accept cookie:</p>
+  <p>
+    The "We use cookies!" window will pop up whenever the page is reloaded. However, after clicking
+    on the "Ok, accepted" button, x.js will remember the user's choice and will not display it.
+  </p>
+  <p>TODO: add support "delay" modifier</p>
+  <p>TODO: fix work</p>
+  <div x.viewed.local x-show="viewed !== true" hidden>
+    <span>We use cookie!</span>
+    <button type="button" @click="viewed = !viewed">Ok, accepted</button>
+  </div>
+</div>
+
+<%= _.template(require('./parts/footer.html').default)(data) %>
