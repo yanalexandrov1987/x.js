@@ -207,12 +207,18 @@ export default class Component {
     const methods = {};
     Object.keys(x.methods).forEach(key => methods[key] = x.methods[key](e, e.target));
 
+    let data = {}, el = e.target;
+    while (el && !(data = el.__x_for_data)) {
+      el = el.parentElement;
+    }
+
     saferEval(expression, this.data, {
       ...{
         '$el': e.target,
         '$event': e,
         '$refs': this.getRefsProxy(),
       },
+      ...data,
       ...methods
     }, true)
   }

@@ -6,17 +6,21 @@
 <div x-data="{ tasks: [] }">
   <div>Add task:</div>
   <input placeholder="Add new task..." x.value />
-  <button type="button" @click="tasks = tasks.concat(value); value = ''" :disabled="!value.trim()">Add</button>
+  <button type="button" @click="tasks = tasks.concat({title: value, checked: false}); value = ''" :disabled="!value.trim()">Add</button>
   <br>
   <br>
 
   <div>Tasks list:</div>
   <ul>
-    <li x-for="task in tasks">
-      <span x-text="`${++key} ${task}`"></span> <i @click="(() => console.log(tasks[key]))()">Remove</i>
+    <li x-for="(task, index) in tasks">
+      <label>
+        <input type="checkbox" @change="task.checked = !task.checked" :checked="task.checked">
+        <span x-text="task.title" :class="{'strike': task.checked}" @click="console.log(task)"></span>
+      </label>
+      <button @click="tasks = tasks.filter((task, key) => key !== index)">Remove</button>
     </li>
   </ul>
-  <button type="button" x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
+  <button x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
 </div>
 
 <%= _.template(require('./parts/footer.html').default)(data) %>
