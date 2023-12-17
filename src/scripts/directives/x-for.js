@@ -6,15 +6,13 @@ directive('for', (el, expression, attribute, x, component) => {
     return;
   }
 
-  const [item, items] = expression.split(' in ');
+  const regex  = /^\(?(\w+)(?:,\s*(\w+))?\)?\s+in\s+(\w+)$/;
+  const [, item, index = 'key', items] = expression.match(regex) || [];
 
   const dataItems = saferEval(`${items}`, component.data);
 
-  let sibling = el.nextSibling;
-  while (sibling) {
-    const nextSibling = sibling.nextSibling;
-    sibling.parentNode.removeChild(sibling);
-    sibling = nextSibling;
+  while (el.nextSibling) {
+    el.nextSibling.remove();
   }
 
   dataItems.forEach((dataItem, key) => {
@@ -23,7 +21,9 @@ directive('for', (el, expression, attribute, x, component) => {
     clone.removeAttribute('x-for');
 
     (async () => {
-      await component.initialize(clone, component.data, {[item]: dataItem, key});
+      clone.__x_for_data = {[item]: dataItem, [index]: key};
+
+      await component.initialize(clone, component.data, clone.__x_for_data);
 
       el.parentNode.appendChild(clone);
     })();
