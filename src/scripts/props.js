@@ -1,11 +1,11 @@
-import { eventCreate, getAttributes, saferEval } from './utils';
+import { castToType, eventCreate, getAttributes, isInputField, saferEval } from "./utils";
 import { domWalk } from './dom';
 
 export function fetchProps(rootElement, data) {
   const checkboxes = {};
   domWalk(rootElement, el => {
     getAttributes(el).forEach(attribute => {
-      let {modifiers, prop} = attribute;
+      let {modifiers, prop, expression} = attribute;
       if (prop) {
         let keys;
 
@@ -17,10 +17,14 @@ export function fetchProps(rootElement, data) {
           data[prop] = keys.length > 1 ? keys.filter(key => checkboxes[prop][key]) : '';
         }
 
-        let modelExpression = generateExpressionForProp(el, data, prop, modifiers)
-        if (!Array.isArray(keys) || keys.length === 1) {
-          data[prop] = saferEval(modelExpression, data, {'$el': el})
+        // just for input form fields
+        if (isInputField(el)) {
+          let modelExpression = generateExpressionForProp(el, data, prop, modifiers)
+          if (!Array.isArray(keys) || keys.length === 1) {
+            data[prop] = saferEval(modelExpression, data, {'$el': el})
+          }
         }
+        // TODO: what we do for none input fields, like "div" etc?
 
         document.dispatchEvent(eventCreate('x:fetched', {el, data, attribute}))
       }
@@ -49,7 +53,7 @@ export function generateExpressionForProp(el, data, prop, modifiers) {
   }
 
   // People might assume we take care of that for them, because they already set a shared "x.[prop]" attribute.
-  if (['input', 'select', 'textarea'].includes(tag) && !el.hasAttribute('name')) {
+  if (!el.hasAttribute('name')) {
     el.setAttribute('name', prop)
   }
 

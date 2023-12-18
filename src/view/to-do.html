@@ -15,7 +15,7 @@
     <li x-for="(task, index) in tasks">
       <label>
         <input type="checkbox" @change="task.checked = !task.checked" :checked="task.checked">
-        <span x-text="task.title" :class="{'strike': task.checked}" @click="console.log(task)"></span>
+        <span x-text="task.title" :class="task.checked && 'strike'"></span>
       </label>
       <button @click="tasks = tasks.filter((task, key) => key !== index)">Remove</button>
     </li>

@@ -1,3 +1,5 @@
+import { setClasses, setStyles } from './classes';
+
 export function debounce(func, wait, immediate) {
   let timeout;
   return function () {
@@ -49,17 +51,28 @@ export function updateAttribute(el, name, value) {
       el.value = value
     }
   } else if (name === 'class') {
-    if (Array.isArray(value)) {
-      el.setAttribute('class', value.join(' '))
-    } else {
-      // Use the class object syntax that vue uses to toggle them.
-      Object.keys(value).forEach(className => value[className] ? el.classList.add(className) : el.classList.remove(className))
-    }
+    bindClasses(el, value)
+  } else if (name === 'style') {
+    bindStyles(el, value)
   } else if (['disabled', 'readonly', 'required', 'checked', 'autofocus', 'autoplay', 'hidden'].includes(name)) {
     !!value ? el.setAttribute(name, '') : el.removeAttribute(name);
   } else {
     el.setAttribute(name, value)
   }
+}
+
+function bindClasses(el, value) {
+  if (el._x_undoAddedClasses) {
+    el._x_undoAddedClasses()
+  }
+  el._x_undoAddedClasses = setClasses(el, value)
+}
+
+function bindStyles(el, value) {
+  if (el._x_undoAddedStyles) {
+    el._x_undoAddedStyles()
+  }
+  el._x_undoAddedStyles = setStyles(el, value)
 }
 
 export function updateSelect(el, value) {
@@ -80,4 +93,36 @@ export function eventCreate(eventName, detail = {}) {
 
 export function getNextModifier(modifiers, modifier, defaultValue = '') {
   return modifiers[modifiers.indexOf(modifier) + 1] || defaultValue;
+}
+
+export function isInputField(el) {
+  return ['input', 'select', 'textarea'].includes(el.tagName.toLowerCase());
+}
+
+export function castToType(a, value) {
+  const type = typeof a;
+
+  switch (type) {
+    case 'string':
+      return String(value);
+    case 'number':
+      return Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value);
+    case 'boolean':
+      return Boolean(value);
+    case 'object':
+      if (a instanceof Date) {
+        return new Date(value);
+      } else if (Array.isArray(a)) {
+        return Array.from(value);
+      } else {
+        return Object(value);
+      }
+    case 'undefined':
+      if (a === null) {
+        return null;
+      }
+      return value === 'true' ? true : ( value === 'false' ? false : value );
+    default:
+      return value;
+  }
 }

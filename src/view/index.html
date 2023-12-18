@@ -4,18 +4,6 @@
 <%= _.template(require('./parts/header.html').default)(data) %>
 
 <div x-data="{viewed: false, data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
-  List Items!:
-  <ul>
-    <li x-for="list in lists">
-      <span># </span>
-      <a :attributes="list.attributes" x-text="list.title"></a>
-    </li>
-  </ul>
-  <button @click="lists = [{attributes: {href: 'https://jsonplaceholder.typicode.com/posts/1/comments', target: '_blank'}, title: 'Hello Wow!'}, {attributes: {href: '#', target: '_blank'}, title: 'My name is...'}]">Change List</button>
-  <br>
-  <br>
-  <br>
-
   <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => data = response).then(r => console.log(r))">
     <input type="file" name="testFile" placeholder="Choose file">
     <br>
@@ -36,13 +24,7 @@
     </ul>
     <br>
     <br>
-    <div>
-      Accept cookie
-    </div>
-    <div x.viewed.cookie x-show="viewed !== true" hidden>
-      <span>We use cookie!</span>
-      <button type="button" @click="viewed = !viewed">Ok, accepted</button>
-    </div>
+
     <br>
     <div>
       cookie

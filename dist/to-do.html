@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no" />
+    <link rel="shortcut icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="css/style.min.css" />
+    <link rel="stylesheet" href="//unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+    <title>To Do List</title>
+  </head>
+  <body>
+    <div class="document">
+      <div class="document__side">
+        <h1 class="document__title">Meet the X.js 🎉</h1>
+        <div class="document__description">
+          <p>A tiny & powerful JS library for creating interactive user interfaces.</p>
+          <p>
+            It offers a Vue-like declarative API and development using markup-oriented code, with automatic reacts,
+            updates, and renders the new view in real-time.
+          </p>
+        </div>
+        <nav class="document__nav">
+          <div>Examples</div>
+          <ul class="document__menu">
+            <li><a class="document__menu-link" href="/">Home page</a></li>
+            <li><a class="document__menu-link" href="/cookie">Form with cookie</a></li>
+            <li><a class="document__menu-link" href="/one-time-popup">Storage usage</a></li>
+            <li><a class="document__menu-link" href="/to-do">To Do</a></li>
+          </ul>
+        </nav>
+        <ul class="document__links">
+          <li class="document__link">
+            <a href="https://github.com/yanaleksandrov/x.js" target="_blank">See project in <strong>GitHub</strong></a>
+          </li>
+          <li class="document__link">
+            <a href="https://github.com/yanaleksandrov/x.js" target="_blank">Download (10kB) <strong>X.js</strong></a>
+          </li>
+        </ul>
+        <div class="document__footer">
+          This project is maintained by <a href="https://github.com/yanaleksandrov" target="_blank">Yan Aleksandrov</a>
+        </div>
+      </div>
+      <div class="document__main">
+        <div x-data="{ tasks: [] }">
+          <div>Add task:</div>
+          <input placeholder="Add new task..." x.value />
+          <button
+            type="button"
+            @click="tasks = tasks.concat({title: value, checked: false}); value = ''"
+            :disabled="!value.trim()"
+          >
+            Add</button
+          ><br /><br />
+          <div>Tasks list:</div>
+          <ul>
+            <li x-for="(task, index) in tasks">
+              <label
+                ><input type="checkbox" @change="task.checked = !task.checked" :checked="task.checked" />
+                <span x-text="task.title" :class="task.checked && 'strike'"></span
+              ></label>
+              <button @click="tasks = tasks.filter((task, key) => key !== index)">Remove</button>
+            </li>
+          </ul>
+          <button x-show="tasks.length" @click="tasks = []" hidden>Clear all</button>
+        </div>
+      </div>
+    </div>
+    <script src="js/bundle.min.js"></script>
+  </body>
+</html>
