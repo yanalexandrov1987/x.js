@@ -130,6 +130,8 @@ document.addEventListener('x:fetched', ({detail}) => {
     const type  = getStorageType(modifiers);
     const value = storage.get(prop, type);
 
-    data[prop] = castToType(data[prop], value);
+    console.log('Property: ', prop, data[prop], typeof data[prop], value, castToType(data[prop], value))
+
+    //data[prop] = castToType(data[prop], value);
   }
 });
