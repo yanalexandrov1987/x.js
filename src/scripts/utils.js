@@ -1,4 +1,4 @@
-import { setClasses } from './classes';
+import { setClasses, setStyles } from './classes';
 
 export function debounce(func, wait, immediate) {
   let timeout;
@@ -52,6 +52,8 @@ export function updateAttribute(el, name, value) {
     }
   } else if (name === 'class') {
     bindClasses(el, value)
+  } else if (name === 'style') {
+    bindStyles(el, value)
   } else if (['disabled', 'readonly', 'required', 'checked', 'autofocus', 'autoplay', 'hidden'].includes(name)) {
     !!value ? el.setAttribute(name, '') : el.removeAttribute(name);
   } else {
@@ -64,6 +66,13 @@ function bindClasses(el, value) {
     el._x_undoAddedClasses()
   }
   el._x_undoAddedClasses = setClasses(el, value)
+}
+
+function bindStyles(el, value) {
+  if (el._x_undoAddedStyles) {
+    el._x_undoAddedStyles()
+  }
+  el._x_undoAddedStyles = setStyles(el, value)
 }
 
 export function updateSelect(el, value) {

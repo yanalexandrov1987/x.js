@@ -10,13 +10,13 @@
     on the "Ok, accepted" button, x.js will remember the user's choice and will not display it.
   </p>
   <p>TODO: add support "delay" modifier for any directive</p>
-  <div x.viewed.cookies x-show="!viewed" hidden>
+  <div x.viewed.cookie x-show="!viewed" hidden>
     <span>We use cookie!</span>
     <button type="button" @click="viewed = !viewed">Ok, accepted</button>
   </div>
 </div>
 
-<div x-data="{dark: false}" class="test test--content" :class="dark && 'dark'">
+<div x-data class="test test--content" :class="dark && 'dark'">
   <h3>Dark & Light theme switcher</h3>
   <p>
     The "We use cookies!" window will pop up whenever the page is reloaded. However, after clicking
