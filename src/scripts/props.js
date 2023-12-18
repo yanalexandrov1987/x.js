@@ -5,7 +5,7 @@ export function fetchProps(rootElement, data) {
   const checkboxes = {};
   domWalk(rootElement, el => {
     getAttributes(el).forEach(attribute => {
-      let {modifiers, prop, expression} = attribute;
+      let {modifiers, prop} = attribute;
       if (prop) {
         let keys;
 
