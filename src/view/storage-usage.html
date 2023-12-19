@@ -29,7 +29,7 @@
     <button type="button" @click="++voices; voted = true" :disabled="voted">
       <i class="ph ph-thumbs-up"></i>
     </button>
-    <button type="button" class="hidden" @click="voices = 1000; voted = false" x-show="voted">Reset</button>
+    <span class="hidden" @click="voices = 1000; voted = false" x-show="voted">Reset</span>
   </div>
 </div>
 
