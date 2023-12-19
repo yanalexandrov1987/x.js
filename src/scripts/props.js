@@ -2,6 +2,7 @@ import { castToType, eventCreate, getAttributes, isInputField, saferEval } from 
 import { domWalk } from './dom';
 
 export function fetchProps(rootElement, data) {
+  const fetched    = [];
   const checkboxes = {};
   domWalk(rootElement, el => {
     getAttributes(el).forEach(attribute => {
@@ -26,10 +27,13 @@ export function fetchProps(rootElement, data) {
         }
         // TODO: what we do for none input fields, like "div" etc?
 
-        document.dispatchEvent(eventCreate('x:fetched', {el, data, attribute}))
+        fetched.push({el, attribute});
       }
     })
   })
+
+  document.dispatchEvent(eventCreate('x:fetched', {data, fetched}))
+
   return data;
 }
 
