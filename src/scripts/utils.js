@@ -105,8 +105,6 @@ export function castToType(a, value) {
     case 'string':
       return String(value);
     case 'number':
-      console.log(value)
-      console.log(Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value))
       return Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value);
     case 'boolean':
       return Boolean(value);

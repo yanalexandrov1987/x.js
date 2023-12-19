@@ -124,14 +124,15 @@ document.addEventListener('x:refreshed', ({detail}) => {
 });
 
 document.addEventListener('x:fetched', ({detail}) => {
-  const { data, attribute: { modifiers, prop } } = detail;
+  const { data, fetched } = detail;
+  fetched.forEach(item => {
+    const { attribute: { modifiers, prop } } = item;
 
-  if (isStorageModifier(modifiers)) {
-    const type  = getStorageType(modifiers);
-    const value = storage.get(prop, type);
+    if (isStorageModifier(modifiers)) {
+      const type  = getStorageType(modifiers);
+      const value = storage.get(prop, type);
 
-    console.log('Property: ', prop, data[prop], typeof data[prop], value, castToType(data[prop], value))
-
-    //data[prop] = castToType(data[prop], value);
-  }
+      data[prop] = castToType(data[prop], value || data[prop]);
+    }
+  })
 });
