@@ -29,7 +29,7 @@ export function getAttributes(el) {
     const root       = name.replace(startsWith, '');
     const parts      = root.split('.');
     return {
-      attribute: name,
+      name,
       directive: startsWith === 'x-' ? name : (startsWith === ':' ? 'x-bind' : ''),
       event: startsWith === '@' ? parts[0] : '',
       expression: value,
