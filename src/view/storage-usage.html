@@ -41,11 +41,11 @@
     and, when the page is reloaded, it will prompt you to start viewing from the point of departure.
   </p>
   <div>
-    <video x.time.cookie x-ref="video" @play="$el.ontimeupdate = () => time = $el.currentTime" width="640px" height="267px" controls muted>
+    <video x.time.cookie x-ref="video" @play="$el.ontimeupdate = () => time = parseInt($el.currentTime, 10)" width="640px" height="267px" controls muted>
       <source src="https://vjs.zencdn.net/v/oceans.mp4" type='video/mp4' />
     </video>
     <div x-show="time > 0">
-      Start playback from <span x-text="parseInt(time, 10)"></span> seconds?
+      Start playback from <span x-text="time"></span> seconds?
       <button type="button" @click="$refs.video.currentTime = time; $refs.video.play()">Yes</button>
     </div>
   </div>
