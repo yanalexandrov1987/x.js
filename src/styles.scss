@@ -156,6 +156,7 @@ code {
 
 	&__main {
 		flex: 1;
+		max-width: calc(100% - 280px);
 	}
 
 	&__footer {
@@ -163,10 +164,16 @@ code {
 		color: #8e8e8e;
 	}
 
-	@media ( max-width: 1024px ){
+	@media ( max-width: 1200px ) {
+		gap: 64px;
+		padding: 48px;
+	}
+
+	@media ( max-width: 1024px ) {
 		flex-direction: column;
 		min-height: initial;
 		padding: 32px;
+		gap: 64px;
 
 		&__side {
 			height: inherit;
@@ -176,5 +183,13 @@ code {
 			position: initial;
 			max-width: 100%;
 		}
+
+		&__main {
+			max-width: 100%;
+		}
+	}
+
+	@media ( max-width: 640px ) {
+		padding: 24px;
 	}
 }

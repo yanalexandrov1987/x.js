@@ -1,10 +1,10 @@
 import { directive } from '../directives';
 import { updateAttribute } from '../utils';
 
-directive('bind', (el, expression, {attribute}, x, component) => {
-  if (attribute === ':attributes' && typeof expression === 'object') {
+directive('bind', (el, expression, {name}, x, component) => {
+  if (name === ':attributes' && typeof expression === 'object') {
     Object.entries(expression).forEach(([key, value]) => updateAttribute(el, key, value));
   } else {
-    updateAttribute(el, attribute.replace(':', ''), expression);
+    updateAttribute(el, name.replace(':', ''), expression);
   }
 });
