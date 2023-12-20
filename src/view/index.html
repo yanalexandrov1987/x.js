@@ -5,31 +5,10 @@
 
 <div x-data="{viewed: false, data: {percent: 0}, items: [], count: 11, lists: [{attributes: {href: 'https://poe.com/chat/2shu93txki2jj53eflg', target: '_blank'}, title: 'Hello World!'}, {attributes: {href: '#', target: '_blank'}, title: 'How are you?'}]}">
   <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => data = response).then(r => console.log(r))">
-    <input type="file" name="testFile" placeholder="Choose file">
-    <br>
-    <button type="submit">Submit</button>
-    <br>
-    <label for="progress">Загрузка файла:</label>
-    <br>
-    <progress id="progress" :value="data.percent" max="100"></progress>
-    <br>
-    <br>
-
-    <button type="button" @click.delay.1000ms.once="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
-    <ul>
-      <li x-for="item in items">
-        <span x-text="item.id"></span>
-        <a x-text="item.title"></a>
-      </li>
-    </ul>
-    <br>
-    <br>
-
-    <br>
     <div>
       cookie
     </div>
-    <input type="text" x.name.cookie>
+    <input type="text" x.name>
     <div x-text="name"></div>
     <br>
     <br>

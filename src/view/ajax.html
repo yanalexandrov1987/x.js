@@ -1,0 +1,63 @@
+<% var data = {
+  title: "Ajax"
+}; %>
+<%= _.template(require('./parts/header.html').default)(data) %>
+
+<div x-data="{viewed: false}">
+  <h3>Input change send ajax</h3>
+  <p>
+    The "We use cookies!" window will pop up whenever the page is reloaded. However, after clicking
+    on the "Ok, accepted" button, x.js will remember the user's choice and will not display it.
+  </p>
+  <input type="text" name="s" @change="$fetch('https://webhook.site/0f4c9c99-0692-4160-8955-0192a29502c7')">
+</div>
+
+<div x-data="{viewed: false, data: {percent: 0}, items: [], count: 11}">
+  <form @submit.prevent="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => data = response).then(r => console.log(r))">
+    <input type="file" name="testFile" placeholder="Choose file">
+    <br>
+    <button type="submit">Submit</button>
+    <br>
+    <label for="progress">Загрузка файла:</label>
+    <br>
+    <progress id="progress" :value="data.percent" max="100"></progress>
+    <br>
+    <br>
+
+    <button type="button" @click.delay.1000ms.once="$fetch('https://jsonplaceholder.typicode.com/posts', {}, response => items = response.json)">Test Fetch</button>
+    <ul>
+      <li x-for="item in items">
+        <span x-text="item.id"></span>
+        <a x-text="item.title"></a>
+      </li>
+    </ul>
+    <br>
+    <br>
+
+    <br>
+    <div>
+      cookie
+    </div>
+    <input type="text" x.name.cookie>
+    <div x-text="name"></div>
+    <br>
+    <br>
+
+
+    <div>
+      Select
+    </div>
+    <select x.select>
+      <option value="">Select A Color</option>
+      <option value="Value 1">Value 1</option>
+      <option value="Value 2">Value 2</option>
+      <option value="Value 3">Value 3</option>
+    </select>
+    <br>
+    Value of select: <span x-text="select"></span>
+    <br>
+    <br>
+  </form>
+</div>
+
+<%= _.template(require('./parts/footer.html').default)(data) %>
