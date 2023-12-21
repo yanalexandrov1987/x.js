@@ -52,10 +52,14 @@
   </div>
 
   <style>
+		[\x-data] {
+      position: relative;
+    }
+
     [\x-editor] {
       border: 1px solid #000;
       outline: none;
-      padding: 1rem;
+      padding: 4rem 1rem 1rem;
     }
 
 		[\x-editor] p {
@@ -63,6 +67,100 @@
       min-height: 1.4em;
       line-height: 1.4em;
     }
+
+		.spytext-toolbar {
+			background-color: rgb(0 0 0 / 0.025);
+			border: 1px solid #000;
+			display: flex;
+			position: absolute;
+			padding: 12px 16px;
+			top: 0;
+			left: 0;
+			z-index: 9999;
+			width: 100%;
+      gap: 16px;
+		}
+		.spytext-button-group {
+			align-items: center;
+			display: flex;
+			position: relative;
+			gap: 2px;
+		}
+		.spytext-button-group button {
+			display: inline-block;
+			padding: 8px;
+			cursor: pointer;
+			height: 100%;
+			line-height: 1;
+			min-width: 20px;
+			text-decoration: none;
+			border-radius: 5px;
+			border: 0;
+			box-shadow: none;
+			outline: none;
+			transition: all 0.3s;
+      background-color: transparent;
+		}
+		.spytext-button-group button[disabled] {
+			cursor: default;
+			pointer-events: none;
+			color: #cacaca;
+		}
+		.spytext-button-group button.active,
+		.spytext-button-group button:hover{
+			background-color: rgb(0 0 0 / 0.05);
+		}
+		.spytext-button-group button svg {
+			display: table;
+		}
+		.spytext-tooltip {
+			align-content: center;
+			box-shadow: 0 16px 16px -16px rgb(0 0 0 / 5%);
+			display: flex;
+			justify-content: center;
+			margin-top: 3px;
+			opacity: 0;
+			position: absolute;
+			transition: all 0.2s;
+			width: 0px;
+		}
+		.spytext-tooltip.active{
+			margin-top: 0;
+			opacity: 1;
+		}
+		.spytext-tooltip-box {
+			background-color: #1d202b;
+			position: absolute;
+			border-radius: 6px;
+			padding: 6px 10px;
+			color: #e2e6f1;
+			font-size: 12px;
+			text-align: center;
+			letter-spacing: .02em;
+			line-height: 1rem;
+			white-space: nowrap;
+		}
+		.spytext-tooltip-box:after {
+			width: 20px;
+			height: 10px;
+			content: '';
+			position: absolute;
+			left: 50%;
+			bottom: -6.5px;
+			margin-left: -10px;
+			background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='20' height='6' fill='none'%3e%3cpath fill='%231D202B' d='M0 0h20C8 1 13 6 10 6s2-5-10-6z'/%3e%3c/svg%3e");
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: 20px;
+		}
+		.spytext-tooltip.top .spytext-tooltip-box:after {
+			transform: rotateZ(180deg);
+			bottom: calc(100% - 3px);
+		}
+		.spytext-tooltip-hotkey {
+			opacity: .7;
+			word-spacing: -3px;
+		}
   </style>
 </div>
 

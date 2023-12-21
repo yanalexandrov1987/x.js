@@ -1,4 +1,6 @@
 import { directive } from '../directives';
+import { initToolbar } from '../editor/toolbar';
+import { initTooltips } from '../editor/tooltips';
 
 let editor, selections, content;
 
@@ -13,6 +15,9 @@ directive('editor', (el, expression, attribute, x, component) => {
   content = component.data.content;
 
   setIds(content);
+
+  initToolbar(editor);
+  initTooltips(editor);
 
   el.innerHTML = convertJsonToHtml(content).innerHTML;
   //console.log(cropJson(content));
@@ -29,23 +34,26 @@ directive('editor', (el, expression, attribute, x, component) => {
   el.addEventListener('focus',   handleFocus.bind(null, component));
   el.addEventListener('blur',    handleBlur.bind(null, component));
   el.addEventListener('keydown', handleKeyDown.bind(null, component));
-  el.addEventListener('mouseup', handleMouseUp.bind(null, component));
 
   // generate html
   document.addEventListener('x:refreshed', ({detail: { attribute: { prop } }}) => {
-    el.innerHTML = convertJsonToHtml(component.data[prop]).innerHTML;
-
-    let range = document.createRange();
-    let {caretElementIndex, caretPositionStart, caretPositionEnd, selection} = selections;
-    let textNode = editor.querySelector(`[data-id="${caretElementIndex}"]`)?.firstChild;
-    if (textNode) {
-      range.setStart(textNode, caretPositionStart);
-      range.setEnd(textNode, caretPositionEnd);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    refreshHtml(component.data[prop])
   });
 });
+
+function refreshHtml(data) {
+  editor.innerHTML = convertJsonToHtml(data).innerHTML;
+
+  let range = document.createRange();
+  let {caretElementIndex, caretPositionStart, caretPositionEnd, selection} = selections;
+  let textNode = editor.querySelector(`[data-id="${caretElementIndex}"]`)?.firstChild;
+  if (textNode) {
+    range.setStart(textNode, caretPositionStart);
+    range.setEnd(textNode, caretPositionEnd);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
 
 function cropJson(content) {
   const startIndex = 1;
@@ -109,13 +117,20 @@ function handleKeyDown({ data }, e) {
     });
   }
 
-  function insertTextAtIndex(str, index, text) {
+  function insertTextAtIndex(e, str, index) {
+    let {key, keyCode} = e;
     if (index > str.length) {
-      return str + text;
+      return str + key;
     } else if (index < 0) {
-      return text + str;
+      return key + str;
     } else {
-      return str.slice(0, index) + text + str.slice(index);
+      if (keyCode === 46) {
+        return str.slice(0, index) + str.slice(index + 1);
+      }
+      if (keyCode === 8) {
+        return str.slice(0, index - 1) + str.slice(index);
+      }
+      return str.slice(0, index) + key + str.slice(index);
     }
   }
 
@@ -123,27 +138,32 @@ function handleKeyDown({ data }, e) {
   // enter button
   if (isPrintableKey(keyCode)) {
     let focusElement = getItemById(content, selections.caretElementIndex);
-    let newText      = insertTextAtIndex(focusElement.text, selections.caretPositionEnd, e.key);
+    let newText      = insertTextAtIndex(e, focusElement.text, selections.caretPositionEnd);
     if (keyCode === 13) {
       // enter
       content = data.content.concat(paragraph);
     } else if (keyCode === 46) {
       // delete
-      // TODO: delete key
     } else if (keyCode === 8) {
       // backspace
-      content[0].text = data.content[0].text.substring(0, data.content[0].text.length - 1);
+      selections.caretPositionStart = selections.caretPositionEnd = selections.caretPositionStart - 1;
     } else {
       selections.caretPositionStart = selections.caretPositionEnd = selections.caretPositionStart + 1;
-
-      content = updateTextById(content, selections.caretElementIndex, newText);
     }
-    data.content = content;
-  }
-}
+    data.content = updateTextById(content, selections.caretElementIndex, newText);
+  } else {
+    // to left & to right buttons
+    if (keyCode === 37) {
+      selections.caretPositionStart = selections.caretPositionEnd = selections.caretPositionStart - 1;
 
-function handleMouseUp({ data }, e) {
-  //console.log(selection);
+      refreshHtml(content);
+    }
+    if (keyCode === 39) {
+      selections.caretPositionStart = selections.caretPositionEnd = selections.caretPositionStart + 1;
+
+      refreshHtml(content);
+    }
+  }
 }
 
 function getItemById(json, id) {
