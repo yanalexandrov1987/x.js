@@ -28,15 +28,12 @@ export function initTooltips(editor) {
 
         setTimeout(() => tip.classList.add( 'active' ), 10);
 
-      }, 500);
+      }, 750);
     });
 
     btn.addEventListener('mouseleave', () => {
       clearInterval( interval );
-      let tooltip = document.getElementsByClassName( 'spytext-tooltip' );
-      if( tooltip.length ) {
-        tooltip[0].remove();
-      }
+      document.querySelector('.spytext-tooltip')?.remove();
     });
   });
 }

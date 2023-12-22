@@ -23,14 +23,24 @@
           "text": "Готов увидеть?",
         },
         {
-          "tag": "em",
+          "tag": "a",
           "text": "Щас будет что-то!",
-        }
+          "attributes": {
+            "href": "#",
+            "class": "testo",
+          },
+          "child": [
+            {
+              "tag": "em",
+              "text": "Ого-го",
+            },
+          ]
+        },
+        {
+          "tag": "",
+          "text": "Тогда держись",
+        },
       ]
-    },
-    {
-      "tag": "p",
-      "text": "И что же?"
     },
     {
       "tag": "p",
@@ -41,10 +51,6 @@
           "text": "Надеюсь это норм",
         },
       ]
-    },
-    {
-      "tag": "p",
-      "text": "Увы, маловато!"
     },
   ]}'>
   <div x-editor x.content>
@@ -68,12 +74,18 @@
       line-height: 1.4em;
     }
 
+    a {
+			text-decoration: underline;
+      color: blue;
+      cursor: pointer;
+    }
+
 		.spytext-toolbar {
 			background-color: rgb(0 0 0 / 0.025);
 			border: 1px solid #000;
 			display: flex;
 			position: absolute;
-			padding: 12px 16px;
+			padding: 10px 16px;
 			top: 0;
 			left: 0;
 			z-index: 9999;

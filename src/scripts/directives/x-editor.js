@@ -1,4 +1,5 @@
 import { directive } from '../directives';
+import { splitObject } from '../editor/utils';
 import { initToolbar } from '../editor/toolbar';
 import { initTooltips } from '../editor/tooltips';
 
@@ -84,7 +85,6 @@ function setSelection() {
         caretElementIndex: range.startContainer.parentNode?.getAttribute('data-id'),
         caretPositionStart: range.startOffset,
         caretPositionEnd: range.endOffset,
-        hasSelection: !!selection.toString(),
         selectedText: selection.toString() || ''
       }
     }
@@ -130,6 +130,9 @@ function handleKeyDown({ data }, e) {
       if (keyCode === 8) {
         return str.slice(0, index - 1) + str.slice(index);
       }
+      if (keyCode === 13) {
+        return str;
+      }
       return str.slice(0, index) + key + str.slice(index);
     }
   }
@@ -141,7 +144,8 @@ function handleKeyDown({ data }, e) {
     let newText      = insertTextAtIndex(e, focusElement.text, selections.caretPositionEnd);
     if (keyCode === 13) {
       // enter
-      content = data.content.concat(paragraph);
+      splitObject(content, selections.caretElementIndex, selections.caretPositionStart)
+      //content = data.content.concat(paragraph);
     } else if (keyCode === 46) {
       // delete
     } else if (keyCode === 8) {
@@ -206,18 +210,20 @@ function convertJsonToHtml(json) {
 
   Object.keys(json).forEach(tag_name => {
     const { tag, id, ..._element } = json[tag_name];
-    let tag_root = document.createElement(tag);
+    let tag_root = tag ? document.createElement(tag) : document.createTextNode(_element.text);
 
-    id && tag_root.setAttribute('data-id', id);
-    for(let attr_name in _element){
-      let attr_value = _element[attr_name];
-      if ( attr_name === 'text') {
-        tag_root.appendChild(document.createTextNode(attr_value));
-      } else if (attr_name === 'child'){
-        let child = convertJsonToHtml(attr_value);
-        tag_root.appendChild(child);
-      } else {
-        tag_root.setAttribute(attr_name, attr_value);
+    if (tag) {
+      id && tag_root.setAttribute('data-id', id);
+      for(let attr_name in _element){
+        let attr_value = _element[attr_name];
+        if ( attr_name === 'text') {
+          tag_root.appendChild(document.createTextNode(attr_value));
+        } else if (attr_name === 'child'){
+          let child = convertJsonToHtml(attr_value);
+          tag_root.appendChild(child);
+        } else {
+          tag_root.setAttribute(attr_name, attr_value);
+        }
       }
     }
 
