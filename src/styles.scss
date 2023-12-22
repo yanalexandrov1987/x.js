@@ -167,6 +167,11 @@ code {
 	@media ( max-width: 1200px ) {
 		gap: 64px;
 		padding: 48px;
+
+		&__side {
+			top: 48px;
+			max-height: calc(100vh - 96px);
+		}
 	}
 
 	@media ( max-width: 1024px ) {

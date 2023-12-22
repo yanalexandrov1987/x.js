@@ -30,6 +30,7 @@ import './scripts/directives/x-bind';
 import './scripts/directives/x-html';
 import './scripts/directives/x-text';
 import './scripts/directives/x-show';
+import './scripts/directives/x-editor';
 
 /**
  * The Methods
