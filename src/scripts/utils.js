@@ -16,7 +16,12 @@ export function debounce(func, wait, immediate) {
 }
 
 export function saferEval(expression, dataContext, additionalHelperVariables = {}, noReturn = false) {
-  expression = noReturn ? `with($data){${expression}}` : `var result;with($data){result=${expression}};return result`;
+  expression = noReturn ? `with($data){${expression}}` : (
+    isKebabCase(expression) ?
+      `var result;with($data){result=$data['${expression}']};return result` :
+      `var result;with($data){result=${expression}};return result`
+    );
+
   return (new Function(['$data', ...Object.keys(additionalHelperVariables)], expression))(
     dataContext, ...Object.values(additionalHelperVariables)
   )
@@ -99,29 +104,10 @@ export function isInputField(el) {
   return ['input', 'select', 'textarea'].includes(el.tagName.toLowerCase());
 }
 
-export function castToType(a, value) {
-  const type = typeof a;
-  switch (type) {
-    case 'string':
-      return String(value);
-    case 'number':
-      return Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value);
-    case 'boolean':
-      return Boolean(value);
-    case 'object':
-      if (a instanceof Date) {
-        return new Date(value);
-      } else if (Array.isArray(a)) {
-        return Array.from(value);
-      } else {
-        return Object(value);
-      }
-    case 'undefined':
-      if (a === null) {
-        return null;
-      }
-      return value === 'true' ? true : ( value === 'false' ? false : value );
-    default:
-      return value;
-  }
+export function isKebabCase(str) {
+  return /^[a-z][a-z\d]*(-[a-z\d]+)+$/.test(str);
+}
+
+export function isEmpty(variable) {
+  return variable === '' || variable === null || (Array.isArray(variable) && variable.length === 0) || (typeof variable === 'object' && Object.keys(variable).length === 0);
 }
