@@ -72,7 +72,19 @@ module.exports = {
         },
       }),
       new TerserPlugin({
-        extractComments: true,
+        extractComments: false,
+        terserOptions: {
+          compress: false,
+          format: {
+            comments: false,
+            beautify: true,
+            quote_style: 1,
+            preamble: '/* X.js MIT license */',
+          },
+          keep_classnames: true, // save classes names
+          keep_fnames: true, // save functions names
+          mangle: false, // disable names obfuscation
+        },
       }),
     ],
   },
