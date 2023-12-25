@@ -1,4 +1,4 @@
-import { castToType, getNextModifier } from "./utils";
+import { getNextModifier } from './utils';
 
 const storage = {
   get: (name, type) => {
@@ -104,6 +104,33 @@ function isStorageModifier(modifiers) {
 
 function getStorageType(modifiers) {
   return modifiers.includes('cookie') ? 'cookie' : 'local'
+}
+
+function castToType(a, value) {
+  const type = typeof a;
+  switch (type) {
+    case 'string':
+      return String(value);
+    case 'number':
+      return Number.isInteger(a) ? parseInt(value, 10) : parseFloat(value);
+    case 'boolean':
+      return Boolean(value);
+    case 'object':
+      if (a instanceof Date) {
+        return new Date(value);
+      } else if (Array.isArray(a)) {
+        return Array.from(value);
+      } else {
+        return Object(value);
+      }
+    case 'undefined':
+      if (a === null) {
+        return null;
+      }
+      return value === 'true' ? true : ( value === 'false' ? false : value );
+    default:
+      return value;
+  }
 }
 
 document.addEventListener('x:refreshed', ({detail}) => {

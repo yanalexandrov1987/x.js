@@ -1,4 +1,4 @@
-import { eventCreate, getAttributes, isInputField, saferEval } from './utils';
+import { eventCreate, getAttributes, isInputField, saferEval, isEmpty } from './utils';
 import { domWalk } from './dom';
 
 export function fetchProps(rootElement, data) {
@@ -6,6 +6,7 @@ export function fetchProps(rootElement, data) {
   domWalk(rootElement, el => {
     getAttributes(el).forEach(attribute => {
       let {modifiers, prop, name} = attribute;
+
       if (prop) {
         // try fetch multiple checkboxes with same prop
         if (el.type === 'checkbox' && data[prop] === undefined) {
@@ -14,8 +15,12 @@ export function fetchProps(rootElement, data) {
 
         // just for input form fields
         if (isInputField(el)) {
-          let modelExpression = generateExpressionForProp(el, data, prop, modifiers)
-          data[prop] = saferEval(modelExpression, data, {'$el': el})
+          let modelExpression = generateExpressionForProp(el, data, prop, modifiers);
+
+          let oldValue = data[prop] !== undefined ? data[prop] : null,
+              newValue = saferEval(modelExpression, data, {'$el': el});
+
+          data[prop] = oldValue && isEmpty( newValue ) ? oldValue : newValue;
         }
         // TODO: what we do for none input fields, like "div" etc?
 
@@ -55,5 +60,5 @@ export function generateExpressionForProp(el, data, prop, modifiers) {
     el.setAttribute('name', prop)
   }
 
-  return `${prop} = ${rightSideOfExpression}`
+  return `$data['${prop}'] = ${rightSideOfExpression}`
 }
