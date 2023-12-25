@@ -1,9 +1,10 @@
 import { directive } from '../directives';
-import { splitObject } from '../editor/utils';
+import { splitObject, isPrintableKey } from '../editor/utils';
 import { initToolbar } from '../editor/toolbar';
 import { initTooltips } from '../editor/tooltips';
+import { convertJsonToHtml } from '../editor/json';
 
-let editor, selections, content;
+let editor, selections, content, tools, formats;
 
 const paragraph = {'tag': 'p'};
 
@@ -17,14 +18,19 @@ directive('editor', (el, expression, attribute, x, component) => {
 
   setIds(content);
 
-  initToolbar(editor);
+  tools = initToolbar(editor);
   initTooltips(editor);
 
+  Object.entries(tools).forEach(([tool, list]) => {
+    if (tool === 'format') {
+      formats = list;
+    }
+  });
+
   el.innerHTML = convertJsonToHtml(content).innerHTML;
-  //console.log(cropJson(content));
 
   // disable native events in "contenteditable" element
-  ['click', 'focus', 'keydown', 'paste'].forEach(event => {
+  ['click', 'focus', 'paste'].forEach(event => {
     el.addEventListener(event, e => e.preventDefault())
   });
 
@@ -43,7 +49,7 @@ directive('editor', (el, expression, attribute, x, component) => {
 });
 
 function refreshHtml(data) {
-  editor.innerHTML = convertJsonToHtml(data).innerHTML;
+  //editor.innerHTML = convertJsonToHtml(data).innerHTML;
 
   let range = document.createRange();
   let {caretElementIndex, caretPositionStart, caretPositionEnd, selection} = selections;
@@ -56,24 +62,28 @@ function refreshHtml(data) {
   }
 }
 
-function cropJson(content) {
-  const startIndex = 1;
-  const startPoint = 12;
-  const endIndex   = 4;
-  const endPoint   = 4;
-
-  //content.splice(startIndex + 1, endIndex - startIndex - 1);
-
-  return content;
-}
-
 function setSelection() {
   selections = {};
+
+  function findParentByDataId(startContainer) {
+    let parent = startContainer.parentNode;
+
+    if (!parent) {
+      return null;
+    }
+
+    if (parent.getAttribute('data-id')) {
+      return parent;
+    }
+
+    return findParentByDataId(parent);
+  }
 
   const selection = window.getSelection ? window.getSelection() : null;
   if (selection && selection.rangeCount > 0) {
     const range     = selection.getRangeAt(0),
-          container = range.commonAncestorContainer;
+          container = range.commonAncestorContainer,
+          block     = findParentByDataId(range.startContainer);
 
     if (editor.contains(container)) {
       selections = {
@@ -81,8 +91,8 @@ function setSelection() {
         selection,
         type: selection.type || '',
         focusText: container.textContent,
-        caretElement: range.startContainer.parentNode,
-        caretElementIndex: range.startContainer.parentNode?.getAttribute('data-id'),
+        caretElement: block,
+        caretElementIndex: block.getAttribute('data-id'),
         caretPositionStart: range.startOffset,
         caretPositionEnd: range.endOffset,
         selectedText: selection.toString() || ''
@@ -105,6 +115,16 @@ function handleBlur({ data }, e) {
 
 function handleKeyDown({ data }, e) {
   const keyCode = e.keyCode || e.which;
+
+  const hotKey   = `${e.ctrlKey ? 'Ctrl + ' : ''}${e.shiftKey ? 'Shift + ' : ''}${e.code.toUpperCase().replace('KEY', '')}`;
+  const isHotKey = Object.values(tools.format).find(obj => obj.hotkey === hotKey);
+  if (isHotKey) {
+    return;
+  }
+
+  if (keyCode === 13) {
+    return;
+  }
 
   function updateTextById(data, id, newText) {
     return data.map(item => {
@@ -140,6 +160,8 @@ function handleKeyDown({ data }, e) {
   let content = data.content;
   // enter button
   if (isPrintableKey(keyCode)) {
+    console.log(content)
+    console.log(selections)
     let focusElement = getItemById(content, selections.caretElementIndex);
     let newText      = insertTextAtIndex(e, focusElement.text, selections.caretPositionEnd);
     if (keyCode === 13) {
@@ -203,50 +225,4 @@ function setIds(json) {
     json.id = generateIndex();
     Object.values(json).forEach(value => setIds(value));
   }
-}
-
-function convertJsonToHtml(json) {
-  let html = document.createElement('body');
-
-  Object.keys(json).forEach(tag_name => {
-    const { tag, id, ..._element } = json[tag_name];
-    let tag_root = tag ? document.createElement(tag) : document.createTextNode(_element.text);
-
-    if (tag) {
-      id && tag_root.setAttribute('data-id', id);
-      for(let attr_name in _element){
-        let attr_value = _element[attr_name];
-        if ( attr_name === 'text') {
-          tag_root.appendChild(document.createTextNode(attr_value));
-        } else if (attr_name === 'child'){
-          let child = convertJsonToHtml(attr_value);
-          tag_root.appendChild(child);
-        } else {
-          tag_root.setAttribute(attr_name, attr_value);
-        }
-      }
-    }
-
-    html.appendChild(tag_root);
-  })
-
-  return html;
-}
-
-/**
- * Returns true if passed key code is printable (a-Z, 0-9, etc) character.
- *
- * @param {number} keyCode - key code
- * @returns {boolean}
- */
-function isPrintableKey(keyCode) {
-  return keyCode === 8 ||                   // backspace key
-    keyCode === 46  ||                      // delete
-    keyCode === 32  || keyCode === 13 ||    // Space bar & return key(s)
-    keyCode === 229 ||                      // processing key input for certain languages — Chinese, Japanese, etc.
-    (keyCode > 47  && keyCode < 58)  ||     // number keys
-    (keyCode > 64  && keyCode < 91)  ||     // letter keys
-    (keyCode > 95  && keyCode < 112) ||     // Numpad keys
-    (keyCode > 185 && keyCode < 193) ||     // ;=,-./` (in order)
-    (keyCode > 218 && keyCode < 223);       // [\]' (in order)
 }

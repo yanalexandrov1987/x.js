@@ -3,6 +3,24 @@ export function isIOS() {
 }
 
 /**
+ * Returns true if passed key code is printable (a-Z, 0-9, etc) character.
+ *
+ * @param {number} keyCode - key code
+ * @returns {boolean}
+ */
+export function isPrintableKey(keyCode) {
+  return keyCode === 8 ||                   // backspace key
+    keyCode === 46  ||                      // delete
+    keyCode === 32  || keyCode === 13 ||    // Space bar & return key(s)
+    keyCode === 229 ||                      // processing key input for certain languages — Chinese, Japanese, etc.
+    (keyCode > 47  && keyCode < 58)  ||     // number keys
+    (keyCode > 64  && keyCode < 91)  ||     // letter keys
+    (keyCode > 95  && keyCode < 112) ||     // Numpad keys
+    (keyCode > 185 && keyCode < 193) ||     // ;=,-./` (in order)
+    (keyCode > 218 && keyCode < 223);       // [\]' (in order)
+}
+
+/**
  * Split object with 'Enter' key
  *
  * @param data

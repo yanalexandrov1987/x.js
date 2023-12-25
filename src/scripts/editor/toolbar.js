@@ -68,4 +68,6 @@ export function initToolbar(editor) {
     toolsString += '</div>';
   }
   editor.closest('[x-data]').insertAdjacentHTML('afterbegin', `<div class="spytext-toolbar" data-toolbar>${toolsString}</div>`);
+
+  return tools;
 }
