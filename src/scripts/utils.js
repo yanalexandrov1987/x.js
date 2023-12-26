@@ -104,6 +104,12 @@ export function isInputField(el) {
   return ['input', 'select', 'textarea'].includes(el.tagName.toLowerCase());
 }
 
+/**
+ * Check that string is in kebabcase format
+ *
+ * @param str
+ * @returns {boolean}
+ */
 export function isKebabCase(str) {
   return /^[a-z][a-z\d]*(-[a-z\d]+)+$/.test(str);
 }

@@ -1,11 +1,4 @@
 /**
- * ╔══╗╔══╗   ╔══╗╔══╗
- * ╚═╗║║╔═╝   ╚╗╔╝║╔═╝
- *   ║╚╝║      ║║ ║╚═╗
- *   ║╔╗║    ╔╗║║ ╚═╗║
- * ╔═╝║║╚═╗╔╗║╚╝╚╗╔═╝║
- * ╚══╝╚══╝╚╝╚═══╝╚══╝
- *
  * Let's build X together. For starters, we'll import X's core.
  * This is the object that will expose all of X's public API.
  */
