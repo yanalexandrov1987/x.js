@@ -5,7 +5,7 @@
   "scripts": {
     "watch": "webpack --mode development --watch",
     "start": "webpack serve --mode development --no-client-overlay-warnings",
-    "build": "webpack --mode production && prettier --print-width=140 --parser html --write dist/*.html"
+    "build": "webpack --config webpack.config.js webpack.config.min.js --mode production && prettier --parser html --write dist/*.html"
   },
   "license": "MIT",
   "dependencies": {
