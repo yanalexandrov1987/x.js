@@ -146,6 +146,12 @@ export default class Component {
       }
     }
 
+    let target = el;
+
+    if (modifiers.includes('window'))   target = window;
+    if (modifiers.includes('document')) target = document;
+    if (modifiers.includes('outside'))  target = document;
+
     function eventHandler(e) {
       if (modifiers.includes('prevent')) {
         e.preventDefault();
@@ -167,7 +173,7 @@ export default class Component {
 
         // one time run event
         if (modifiers.includes('once')) {
-          el.removeEventListener(event, eventHandler)
+          target.removeEventListener(event, eventHandler)
 
           if (e instanceof IntersectionObserverEntry) {
             removeIntersectionObserver(e.target)
@@ -178,7 +184,7 @@ export default class Component {
 
     if (modifiers.includes('outside')) {
       // Listen for this event at the root level.
-      document.addEventListener(event, e => {
+      target.addEventListener(event, e => {
         // Don't do anything if the click came form the element or within it.
         if (el.contains(e.target)) return
 
@@ -198,7 +204,7 @@ export default class Component {
         observer.observe(el);
         observers.push({el, observer});
       } else {
-        el.addEventListener(event, eventHandler)
+        target.addEventListener(event, eventHandler)
       }
     }
   }
