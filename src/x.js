@@ -30,5 +30,10 @@ import './scripts/directives/x-show';
  * These are the methods that are magically available to all the X.js expressions, within your web app.
  */
 import './scripts/methods/$fetch';
+import './scripts/methods/$dispatch';
+
+// experimental directives & methods for grafema project
+import './scripts/directives/x-grafema';
+import './scripts/methods/$grafema';
 
 window.x.start();
