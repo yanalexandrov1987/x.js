@@ -1,17 +1,19 @@
 import { setClasses, setStyles } from './classes';
 
-export function debounce(func, wait, immediate) {
+/**
+ * Creates a debounced function that delays the invocation of the provided function using a specified wait time.
+ *
+ * @param {Function} func - The function to be debounced.
+ * @param {number} wait - The delay in milliseconds.
+ * @returns {Function} - The debounced function.
+ */
+export function debounce(func, wait) {
   let timeout;
-  return function () {
-    let context = this, args = arguments;
-    let later = function () {
-        timeout = null;
-        if (!immediate) func.apply(context, args);
-    };
-    let callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
+
+  return function (...args) {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => func.apply(this, args), wait);
   }
 }
 
@@ -92,14 +94,22 @@ export function eventCreate(eventName, detail = {}) {
   return new CustomEvent(eventName, {
     detail,
     bubbles: true,
-    cancelable: true
+    // Allows events to pass the shadow DOM barrier.
+    composed: true,
+    cancelable: true,
   })
 }
 
-export function getNextModifier(modifiers, modifier, defaultValue = '') {
-  return modifiers[modifiers.indexOf(modifier) + 1] || defaultValue;
+export function getNextModifier(modifiers, modifierAfter, defaultValue = '') {
+  return modifiers[modifiers.indexOf(modifierAfter) + 1] || defaultValue;
 }
 
+/**
+ * Checks that the html element is the form input elements
+ *
+ * @param el
+ * @returns {boolean}
+ */
 export function isInputField(el) {
   return ['input', 'select', 'textarea'].includes(el.tagName.toLowerCase());
 }

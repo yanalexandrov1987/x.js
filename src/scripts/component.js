@@ -135,78 +135,81 @@ export default class Component {
 
   registerListener(el, event, modifiers, expression) {
     const self      = this;
-    const observers = [];
+    const observers = {};
 
-    function removeIntersectionObserver(element) {
-      const index = observers.findIndex(item => item.el === element);
-      if (index >= 0) {
-        const { observer } = observers[index];
-        observer.unobserve(element);
-        observers.splice(index, 1);
-      }
-    }
+    // Helper for remove exist observer from element
+    const removeIntersectionObserver = element => (observers[element]?.unobserve(element), delete observers[element]);
 
-    let target = el;
+    // Helper allows to add functionality to the listener's handler more flexibly in a "middleware" style.
+    const wrapHandler = (callback, wrapper) => e => wrapper(callback, e);
+
+    let target  = el;
+    let options = {};
+    let handler = e => self.runListenerHandler(expression, e);
 
     if (modifiers.includes('window'))   target = window;
     if (modifiers.includes('document')) target = document;
-    if (modifiers.includes('outside'))  target = document;
 
-    function eventHandler(e) {
-      if (modifiers.includes('prevent')) {
-        e.preventDefault();
-      }
+    if (modifiers.includes('passive')) options.passive = true;
+    if (modifiers.includes('capture')) options.capture = true;
 
-      if (modifiers.includes('stop')) {
-        e.stopPropagation()
-      }
-
-      // delay an event for a certain time
-      let wait = 0;
-      if (modifiers.includes('delay')) {
-        const numericValue = getNextModifier(modifiers, 'delay').split('ms')[0];
-        wait = !isNaN(numericValue) ? Number(numericValue) : 250;
-      }
-
-      debounce(() => {
-        self.runListenerHandler(expression, e)
-
-        // one time run event
-        if (modifiers.includes('once')) {
-          target.removeEventListener(event, eventHandler)
-
-          if (e instanceof IntersectionObserverEntry) {
-            removeIntersectionObserver(e.target)
-          }
-        }
-      }, wait)()
+    // delay an event for a certain time
+    if (modifiers.includes('delay')) {
+      handler = debounce(handler, Number(getNextModifier(modifiers, 'delay').split('ms')[0]) || 250);
     }
 
+    if (modifiers.includes('prevent')) {
+      handler = wrapHandler(handler, (next, e) => { e.preventDefault(); next(e); })
+    }
+
+    // stopping event propagation in DOM.
+    if (modifiers.includes('stop')) {
+      handler = wrapHandler(handler, (next, e) => { e.stopPropagation(); next(e); })
+    }
+
+    // event outside of element
     if (modifiers.includes('outside')) {
-      // Listen for this event at the root level.
-      target.addEventListener(event, e => {
+      target = document;
+
+      handler = wrapHandler(handler, (next, e) => {
         // Don't do anything if the click came form the element or within it.
-        if (el.contains(e.target)) return
+        if (el.contains(e.target)) return;
 
         // Don't do anything if this element isn't currently visible.
-        if (el.offsetWidth < 1 && el.offsetHeight < 1) return
+        if (el.offsetWidth < 1 && el.offsetHeight < 1) return;
 
-        // Now that we are sure the element is visible, AND the click
-        // is from outside it, let's run the expression.
-        this.runListenerHandler(expression, e)
+        if (e.target.isConnected === false) return;
+
+        next(e);
       })
-    } else {
-      if (event === 'load') {
-        eventHandler(eventCreate('load',{}));
-      } else if (event === 'intersect') {
-        const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && eventHandler(entry)))
-
-        observer.observe(el);
-        observers.push({el, observer});
-      } else {
-        target.addEventListener(event, eventHandler)
-      }
     }
+
+    // one time run event
+    if (modifiers.includes('once')) {
+      handler = wrapHandler(handler, (next, e) => {
+        next(e);
+
+        target.removeEventListener(event, handler, options);
+
+        if (e instanceof IntersectionObserverEntry) {
+          removeIntersectionObserver(e.target);
+        }
+      })
+    }
+
+    if (event === 'load') {
+      handler(eventCreate(event,{}));
+    }
+
+    if (event === 'intersect') {
+      const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.isIntersecting && handler(entry)));
+      if (!observers[el]) {
+        observers[el] = observer;
+      }
+      observer.observe(el);
+    }
+
+    target.addEventListener(event, handler, options);
   }
 
   runListenerHandler(expression, e) {

@@ -112,7 +112,12 @@
   <br><br><br><br><br><br><br><br><br><br>
   <br><br><br><br><br><br><br><br><br><br>
   <div @load="console.log('I\'m loaded!')"></div>
-  <div @intersect.once="console.log('I\'m being showed!')">Test me</div>
+  <div @intersect.once="console.log('First observer: I\'m being showed!')">First observer</div>
+  <div @intersect.once="console.log('Second observer: I\'m being showed!')">Second observer</div>
+
+  <div @click.capture="console.log('I will log first')">
+    <button @click="console.log('I will log second')"></button>
+  </div>
 </div>
 
 <div x-data="{ foo: 'bar', count: '2', hel: '<strong>x-html directive</strong>', test: 'X-text directive', open: false, tab: 'foo' }">
