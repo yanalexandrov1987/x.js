@@ -17,6 +17,12 @@ export function debounce(func, wait) {
   }
 }
 
+export function pulsate(func, wait, immediate) {
+  immediate && func();
+
+  return setInterval(func, wait);
+}
+
 export function saferEval(expression, dataContext, additionalHelperVariables = {}, noReturn = false) {
   expression = noReturn ? `with($data){${expression}}` : (
     isKebabCase(expression) ?

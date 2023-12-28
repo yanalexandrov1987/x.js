@@ -1,13 +1,16 @@
 import { debounce, getAttributes, saferEval, updateAttribute, eventCreate, getNextModifier } from './utils';
 import { fetchProps, generateExpressionForProp } from './props';
 import { domWalk } from './dom';
+import { injectDataProviders } from './data';
 
 export default class Component {
   constructor(el) {
-    this.el      = el
-    this.rawData = saferEval(el.getAttribute('x-data') || '{}', {})
-    this.rawData = fetchProps(el, this.rawData)
-    this.data    = this.wrapDataInObservable(this.rawData)
+    let dataProviderContext = {};
+
+    this.el      = el;
+    this.rawData = saferEval(el.getAttribute('x-data') || '{}', injectDataProviders(dataProviderContext, {}));
+    this.rawData = fetchProps(el, this.rawData);
+    this.data    = this.wrapDataInObservable(this.rawData);
 
     this.initialize(el, this.data)
   }
@@ -134,7 +137,6 @@ export default class Component {
   }
 
   registerListener(el, event, modifiers, expression) {
-    const self      = this;
     const observers = {};
 
     // Helper for remove exist observer from element
@@ -145,7 +147,7 @@ export default class Component {
 
     let target  = el;
     let options = {};
-    let handler = e => self.runListenerHandler(expression, e);
+    let handler = e => this.runListenerHandler(expression, e);
 
     if (modifiers.includes('window'))   target = window;
     if (modifiers.includes('document')) target = document;

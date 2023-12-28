@@ -3,6 +3,14 @@
 }; %>
 <%= _.template(require('./parts/header.html').default)(data) %>
 
+<div x-data="timer( new Date( new Date().getTime() + ( 110000 * 1000 ) ).toISOString() )">
+  <span @load="init()" x-text="day">01</span>:<span x-text="hour">06</span>:<span x-text="min">33</span>:<span x-text="sec">20</span>
+</div>
+<br>
+<br>
+<br>
+<br>
+
 <div class="accordion" x-data="{ i: -1 }">
   <div class="accordion__item">
     <div class="accordion__title" @click="i = i !== 1 ? 1 : -1">Title of item 1</div>
