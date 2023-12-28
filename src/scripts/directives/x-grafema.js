@@ -84,7 +84,62 @@ directive('highlight', (el, expression, {modifiers}, x, component) => {
  * @since 1.0
  */
 directive('collapse', (el, expression, attribute, x, component) => {
+  function slide(el, isDown, duration) {
 
+    if (typeof duration === 'undefined') duration = 200;
+    if (typeof isDown === 'undefined') isDown = false;
+
+    el.style.overflow = 'hidden';
+    if (isDown) {
+      el.style.display = 'block';
+    }
+
+    let elProperties = ['height', 'paddingTop', 'paddingBottom', 'marginTop', 'marginBottom'];
+    let elStyles     = window.getComputedStyle(el);
+
+    let {
+      height,
+      paddingTop,
+      paddingBottom,
+      marginTop,
+      marginBottom
+    } = elProperties.reduce((acc, prop) => (acc[prop] = parseFloat(elStyles[prop]), acc), {});
+
+    let stepHeight        = height        / duration;
+    let stepPaddingTop    = paddingTop    / duration;
+    let stepPaddingBottom = paddingBottom / duration;
+    let stepMarginTop     = marginTop     / duration;
+    let stepMarginBottom  = marginBottom  / duration;
+
+    let start;
+
+    function step(timestamp) {
+      if (start === undefined) {
+        start = timestamp;
+      }
+
+      let elapsed = timestamp - start;
+
+      el.style.height        = `${isDown ? stepHeight * elapsed : height - stepHeight * elapsed}px`;
+      el.style.paddingTop    = `${isDown ? stepPaddingTop * elapsed : paddingTop - stepPaddingTop * elapsed}px`;
+      el.style.paddingBottom = `${isDown ? stepPaddingBottom * elapsed : paddingBottom - stepPaddingBottom * elapsed}px`;
+      el.style.marginTop     = `${isDown ? stepMarginTop * elapsed : marginTop - stepMarginTop * elapsed}px`;
+      el.style.marginBottom  = `${isDown ? stepMarginBottom * elapsed : marginBottom - stepMarginBottom * elapsed}px`;
+
+      if (elapsed >= duration) {
+        [...elProperties, 'overflow'].forEach(prop => el.style[prop] = '');
+        if (!isDown) {
+          el.style.display = 'none';
+        }
+      } else {
+        window.requestAnimationFrame(step);
+      }
+    }
+
+    window.requestAnimationFrame(step);
+  }
+
+  slide(el, expression);
 });
 
 /**
@@ -137,13 +192,13 @@ directive('listen', (el, expression, attribute, x, component) => {
     return false;
   }
 
-  let name = "listen-node";
+  let name = 'listen-node';
 
   function _play( aud, icn ) {
-    icn.classList.add("playing");
+    icn.classList.add('playing');
     aud.play();
-    aud.setAttribute( "data-playing", "true" );
-    aud.addEventListener("ended", function() {
+    aud.setAttribute( 'data-playing', "true" );
+    aud.addEventListener('ended', function() {
       _pause( aud, icn );
       aud.parentNode.style.background = null;
       return false;
@@ -152,23 +207,23 @@ directive('listen', (el, expression, attribute, x, component) => {
 
   function _pause( aud, icn ) {
     aud.pause();
-    aud.setAttribute( "data-playing", "false" );
-    icn.classList.remove("playing");
+    aud.setAttribute( 'data-playing', 'false' );
+    icn.classList.remove('playing');
   }
 
   let aud, icn;
-  let css = document.createElement("style");
-  css.type = "text/css";
-  css.innerHTML = ".listen-node {display: inline-block; background:rgba(0, 0, 0, 0.05); padding: 1px 8px 2px; border-radius:3px; cursor: pointer;} .listen-node i {font-size: 0.65em; border: 0.5em solid transparent; border-left: 0.75em solid; display: inline-block; margin-right: 2px;margin-bottom: 1px;} .listen-node .playing { border: 0; border-left: 0.75em double; border-right: 0.5em solid transparent; height: 1em;}";
-  document.getElementsByTagName("head")[0].appendChild(css);
+  let css = document.createElement('style');
+  css.type = 'text/css';
+  css.innerHTML = '.listen-node {display: inline-block; background:rgba(0, 0, 0, 0.05); padding: 1px 8px 2px; border-radius:3px; cursor: pointer;} .listen-node i {font-size: 0.65em; border: 0.5em solid transparent; border-left: 0.75em solid; display: inline-block; margin-right: 2px;margin-bottom: 1px;} .listen-node .playing { border: 0; border-left: 0.75em double; border-right: 0.5em solid transparent; height: 1em;}';
+  document.getElementsByTagName('head')[0].appendChild(css);
 
   aud = document.createElement( 'audio' );
   icn = document.createElement( 'i' );
 
-  aud.src = el.getAttribute( "data-src" );
-  aud.setAttribute( "data-playing", "false" );
+  aud.src = el.getAttribute( 'data-src' );
+  aud.setAttribute( 'data-playing', 'false' );
 
-  el.id = name + "-" + i;
+  el.id = name + '-' + i;
   el.insertBefore( icn, el.firstChild );
   el.appendChild( aud );
 
@@ -189,7 +244,7 @@ directive('listen', (el, expression, attribute, x, component) => {
       aud.srt = parseInt( elm.getAttribute( 'data-start' ) ) || 0;
       aud.end = parseInt( elm.getAttribute( 'data-end' ) ) || aud.duration;
 
-      if ( aud && aud.getAttribute( "data-playing" ) === "false" ) {
+      if ( aud && aud.getAttribute( 'data-playing' ) === 'false' ) {
         if ( aud.srt > aud.currentTime || aud.end < aud.currentTime ) {
           aud.currentTime = aud.srt;
         }
@@ -202,7 +257,7 @@ directive('listen', (el, expression, attribute, x, component) => {
         let d = requestAnimationFrame( loop );
         let percent = (((aud.currentTime - aud.srt) * 100) / (aud.end - aud.srt));
         percent = percent < 100 ? percent : 100;
-        elm.style.background = "linear-gradient(to right, rgba(0, 0, 0, 0.1)" + percent + "%, rgba(0, 0, 0, 0.05)" + percent + "%)";
+        elm.style.background = 'linear-gradient(to right, rgba(0, 0, 0, 0.1)' + percent + '%, rgba(0, 0, 0, 0.05)' + percent + '%)';
 
         if ( aud.end < aud.currentTime ) {
           _pause( aud, icn );

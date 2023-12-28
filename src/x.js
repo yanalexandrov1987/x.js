@@ -20,6 +20,7 @@ import './scripts/storage';
  */
 import './scripts/directives/x-for';
 import './scripts/directives/x-bind';
+import './scripts/directives/x-hide';
 import './scripts/directives/x-html';
 import './scripts/directives/x-text';
 import './scripts/directives/x-show';

@@ -39,9 +39,8 @@ code {
 	cursor: pointer;
 }
 
-.hidden,
-[hidden],
-[x-for] {
+[x-for],
+[x-hide] {
 	display: none;
 }
 
