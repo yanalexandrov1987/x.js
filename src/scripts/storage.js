@@ -152,6 +152,7 @@ document.addEventListener('x:refreshed', ({detail}) => {
 
 document.addEventListener('x:fetched', ({detail}) => {
   const { data, fetched } = detail;
+
   fetched.forEach(item => {
     const { attribute: { modifiers, prop } } = item;
 

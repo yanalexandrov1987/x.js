@@ -1,18 +1,31 @@
 import { debounce, getAttributes, saferEval, updateAttribute, eventCreate, getNextModifier } from './utils';
 import { fetchProps, generateExpressionForProp } from './props';
+import { store } from './store';
 import { domWalk } from './dom';
 import { injectDataProviders } from './data';
 
 export default class Component {
   constructor(el) {
-    let dataProviderContext = {};
+    document.dispatchEvent(
+      eventCreate('x:init', {x: this})
+    );
 
-    this.el      = el;
-    this.rawData = saferEval(el.getAttribute('x-data') || '{}', injectDataProviders(dataProviderContext, {}));
+    let dataProviderContext = {};
+    injectDataProviders(dataProviderContext);
+    //console.log(dataProviderContext)
+
+    this.root    = el;
+    this.rawData = saferEval(el.getAttribute('x-data') || '{}', dataProviderContext);
+    // console.log(this.rawData)
+    // console.log('        ')
     this.rawData = fetchProps(el, this.rawData);
     this.data    = this.wrapDataInObservable(this.rawData);
 
     this.initialize(el, this.data)
+  }
+
+  store(name, value) {
+    return store(name, value);
   }
 
   evaluate(expression, additionalHelperVariables) {
@@ -53,9 +66,9 @@ export default class Component {
     })
   }
 
-  initialize(rootElement, data, additionalHelperVariables) {
+  initialize(root, data, additionalHelperVariables) {
     const self = this;
-    domWalk(rootElement, el => {
+    domWalk(root, el => {
       getAttributes(el).forEach(attribute => {
         let {directive, event, expression, modifiers, prop} = attribute;
 
@@ -68,9 +81,7 @@ export default class Component {
         if (prop) {
           // If the element we are binding to is a select, a radio, or checkbox
           // we'll listen for the change event instead of the "input" event.
-          let event = ['select-multiple', 'select', 'checkbox', 'radio'].includes(el.type)
-          || modifiers.includes('lazy')
-            ? 'change' : 'input';
+          let event = ['select-multiple', 'select', 'checkbox', 'radio'].includes(el.type) || modifiers.includes('lazy') ? 'change' : 'input';
 
           self.registerListener(
             el,
@@ -100,7 +111,7 @@ export default class Component {
   refresh() {
     const self = this;
     debounce(() => {
-      domWalk(self.el, el => {
+      domWalk(self.root, el => {
         getAttributes(el).forEach(attribute => {
           let {directive, expression, prop} = attribute;
 
@@ -117,7 +128,7 @@ export default class Component {
 
           if (directive in x.directives) {
             let output = expression,
-              deps   = [];
+                deps   = [];
             if (directive !== 'x-for') {
               try {
                 ({ output, deps } = self.evaluate(expression));
@@ -125,6 +136,7 @@ export default class Component {
             } else {
               [, deps] = expression.split(' in ');
             }
+
             if (self.concernedData.filter(i => deps.includes(i)).length > 0) {
               x.directives[directive](el, output, attribute, x, self);
             }
@@ -216,7 +228,7 @@ export default class Component {
 
   runListenerHandler(expression, e) {
     const methods = {};
-    Object.keys(x.methods).forEach(key => methods[key] = x.methods[key](e, e.target));
+    Object.keys(x.methods).forEach(key => methods[key] = x.methods[key](e, e.target, this));
 
     let data = {}, el = e.target;
     while (el && !(data = el.__x_for_data)) {
@@ -228,9 +240,10 @@ export default class Component {
         '$el': e.target,
         '$event': e,
         '$refs': this.getRefsProxy(),
+        '$root': this.root,
       },
-      ...data,
-      ...methods
+      ...methods,
+      ...data
     }, true)
   }
 
@@ -239,14 +252,14 @@ export default class Component {
 
     // One of the goals of this project is to not hold elements in memory, but rather re-evaluate
     // the DOM when the system needs something from it. This way, the framework is flexible and
-    // friendly to outside DOM changes from libraries like Vue/Livewire.
+    // friendly to outside DOM changes from libraries like Vue.
     // For this reason, I'm using an "on-demand" proxy to fake a "$refs" object.
     return new Proxy({}, {
       get(object, property) {
         let ref
 
         // We can't just query the DOM because it's hard to filter out refs in nested components.
-        domWalk(self.el, el => {
+        domWalk(self.root, el => {
           if (el.hasAttribute('x-ref') && el.getAttribute('x-ref') === property) {
             ref = el
           }

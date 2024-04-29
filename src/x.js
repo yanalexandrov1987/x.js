@@ -20,17 +20,18 @@ import './scripts/storage';
  */
 import './scripts/directives/x-for';
 import './scripts/directives/x-bind';
-import './scripts/directives/x-hide';
 import './scripts/directives/x-html';
 import './scripts/directives/x-text';
 import './scripts/directives/x-show';
+import './scripts/directives/x-cloak';
 
 /**
  * The Methods
  *
  * These are the methods that are magically available to all the X.js expressions, within your web app.
  */
-import './scripts/methods/$fetch';
+import './scripts/methods/$ajax';
+import './scripts/methods/$store';
 import './scripts/methods/$dispatch';
 
 // experimental directives & methods for grafema project

@@ -1,6 +1,166 @@
 import { method } from '../methods';
 import { data } from '../data';
+import { store } from '../store';
 import { pulsate } from '../utils';
+import { extend } from '../extensions';
+import { directive } from '../directives';
+import { reactive, effect } from '../reactivity';
+
+/**
+ * Multistep
+ *
+ * @since 1.0
+ * @see based on https://github.com/glhd/alpine-wizard
+ */
+extend(
+  () => directive('step', (el, expression, attribute, x, component) => {
+    const wizard = getWizard(el, component);
+    const step   = wizard.getStep(el);
+
+    const evaluateCheck = () => [!!expression, {}];
+    if (step) {
+      [step.isComplete, step.errors] = evaluateCheck();
+
+      effect(() => {
+        //console.log(step)
+        console.log('Current Index:', wizard.currentIndex);
+        component.refresh();
+      }, Object.keys(wizard));
+
+      // if (step.isComplete) {
+      //   wizard.currentIndex++
+      // } else {
+      //   wizard.currentIndex--
+      // }
+    }
+  }),
+  () => method('step', (e, el, component) => getWizard(el, component)),
+);
+let wizards   = new WeakMap();
+let getWizard = (el, {root}) => {
+  if (!wizards.has(root)) {
+    wizards.set(root, reactive({
+      steps: [],
+      currentIndex: 0,
+      progress() {
+        let current  = 0;
+        let complete = 0;
+        let total    = 0;
+        for (let index = 0; index < this.steps.length; index++) {
+          const step = this.steps[index];
+          total++;
+          if (index <= this.currentIndex) {
+            current++;
+          }
+          if (index <= this.currentIndex && step.isComplete) {
+            complete++;
+          }
+        }
+
+        return {
+          total,
+          complete,
+          current,
+          incomplete: total - complete,
+          progress: `${Math.floor(current / total * 100)}%`,
+          completion: `${Math.floor(complete / total * 100)}%`,
+          percentage: Math.floor(complete / total * 100)
+        }
+      },
+      current() {
+        return this.steps[this.currentIndex] || { el: null, title: null };
+      },
+      previous() {
+        return this.steps[this.previousIndex()] || { el: null, title: null };
+      },
+      next() {
+        return this.steps[this.nextIndex()] || { el: null, title: null };
+      },
+      previousIndex() {
+        return findNextIndex(this.steps, this.currentIndex, -1);
+      },
+      nextIndex() {
+        return findNextIndex(this.steps, this.currentIndex, 1);
+      },
+      isStep(index) {
+        if (!Array.isArray(index)) {
+          index = [index]
+        }
+        return index.includes(this.currentIndex);
+      },
+      isFirst() {
+        return this.previousIndex() === null;
+      },
+      isNotFirst() {
+        return !this.isFirst();
+      },
+      isLast() {
+        return this.nextIndex() === null;
+      },
+      isNotLast() {
+        return !this.isLast();
+      },
+      isCompleted() {
+        return this.current().isComplete && this.nextIndex() === null;
+      },
+      isUncompleted() {
+        return !this.isCompleted();
+      },
+      goNext() {
+        this.goto(this.nextIndex());
+      },
+      canGoNext() {
+        return this.current().isComplete && this.nextIndex() !== null;
+      },
+      cannotGoNext() {
+        return !this.canGoNext();
+      },
+      goBack() {
+        this.goto(this.previousIndex());
+      },
+      canGoBack() {
+        return this.previousIndex() !== null;
+      },
+      cannotGoBack() {
+        return !this.canGoBack();
+      },
+      goto(index) {
+        if (index !== null && this.steps[index] !== void 0) {
+          this.currentIndex = index;
+
+          let action = this.steps[index].action || '';
+          if (action) {
+            this.steps[index].evaluate(action);
+          }
+        }
+        return this.current();
+      },
+      getStep(el) {
+        let step = this.steps.find(step => step.el === el);
+        if (!step) {
+          el.setAttribute('x-show', 'console.log($step.current());$step.current().el === $el');
+          step = {
+            el,
+            title: '',
+            isComplete: true,
+            errors: {},
+          }
+          this.steps.push(step);
+        }
+        return step;
+      }
+    }));
+  }
+  return wizards.get(root);
+};
+let findNextIndex = (steps, current, direction = 1) => {
+  for (let index = current + direction; index >= 0 && index < steps.length; index += direction) {
+    if (steps[index]) {
+      return index;
+    }
+  }
+  return null;
+};
 
 /**
  * Copy data to clipboard.
@@ -8,17 +168,42 @@ import { pulsate } from '../utils';
  * @since 1.0
  */
 method('copy', (e, el) => subject => {
-  window.navigator.clipboard.writeText(subject).then(
-    () => {
-      let classes = 'ph-copy ph-check'.split(' ');
+  window.navigator.clipboard.writeText(subject)
+    .then(() => {
+      let classes = ['ph-copy', 'ph-check'];
 
       classes.forEach(s => el.classList.toggle(s));
-      setTimeout( () => classes.forEach(s => el.classList.toggle(s)), 1000 )
-    },
-    () => {
-      console.log( 'Your browser is not support clipboard!' );
-    }
-  );
+      setTimeout(() => classes.forEach(s => el.classList.toggle(s)), 1000);
+    });
+});
+
+/**
+ * Date picker with Datepicker.js
+ *
+ * @see     https://github.com/wwilsman/Datepicker.js
+ * @licence MIT
+ * @since   1.0
+ */
+method('pickadate', (e, el) => options => {
+  try {
+    options = Object.assign( {}, {
+      inline: true,
+      multiple: false,
+      ranged: true,
+      time: true,
+      lang: 'ru',
+      months: 2,
+      timeAmPm: false,
+      within: false,
+      without: false,
+      yearRange: 5,
+      weekStart: 1,
+    }, options );
+
+    new Datepicker(el,options);
+  } catch (e) {
+    console.error( 'X.js: "Datepicker" is not defined. Details: https:://github.com/text-mask/text-mask' );
+  }
 });
 
 /**
@@ -130,8 +315,8 @@ method('stream', () => {
 
       ctx.imageSmoothingQuality = 'low';
 
-      let scale = height / imageHeight;
-      console.log((offsetTop + offsetLeft) / 2)
+      //let scale = height / imageHeight;
+      //console.log((offsetTop + offsetLeft) / 2)
       //ctx.drawImage(video, 0, 0, width * 2, height * 2, 0, 0, width, height);
       //ctx.drawImage(video, 0, 0, imageWidth, imageHeight);
       ctx.drawImage(video, offsetLeft * 1.5, offsetTop * 1.5, height * 1.5, height * 1.5, 0, 0, imageWidth, imageHeight);
@@ -254,6 +439,93 @@ method('password', () => {
   }
 });
 
+method('mask', (e, el) => mask =>  {
+  if( typeof mask === 'undefined' ) {
+    let type = el.getAttribute( 'type' );
+    if( type ) {
+      let exp = '';
+      // validation based on the field type
+      switch( type ) {
+        case 'tel':
+          exp = /[^ \-()+\d]/g;
+          break;
+        case 'number':
+          exp = /[^.-\d]/g;
+          break;
+        case 'color':
+          exp = /[^ a-zA-Z(),\d]/g;
+          break;
+        // TODO: validate domains and subdomains
+        // @see https://stackoverflow.com/questions/26093545/how-to-validate-domain-name-using-regex
+        case 'domain':
+          break;
+      }
+
+      // removing forbidden characters
+      if ( exp ) {
+        el.value = el.value.replace( exp, '' );
+      }
+    }
+  } else if( mask === Object( mask ) ) {
+    el.value = el.value.replace( mask, '' );
+  }
+  /**
+   * Validation by mask.
+   *
+   * @see discussion //javascript.ru/forum/dom-window/82008-kak-preobrazovat-stroku-v-massiv.html
+   */
+  else {
+    try {
+      function limit( position, symbol, max ) {
+        let pos = position;
+
+        max = max.toString();
+        if( mask.charAt( --pos ) === symbol ) {
+          if( el.value.charAt( pos ) === max.charAt(0) ) {
+            return new RegExp( '[0-' + max.charAt(1) + ']' );
+          } else {
+            return /\d/;
+          }
+        }
+        return new RegExp( '[0-' + max.charAt(0) + ']' );
+      }
+
+      let maskArr  = mask.match( /(\{[^}]+?\})|(.)/g ),
+        //var maskArr  = mask.match( /(\{[^\s]+\})|(\+)|([()])|(.)|(\s+)/g ),
+        position = -1;
+      maskArr = maskArr.map( symbol => {
+        ++position;
+        switch( symbol ) {
+          case 'i':
+            return limit( position, symbol, 59 );
+          case 'H':
+            return limit( position, symbol, 23 );
+          case 'D':
+            return limit( position, symbol, 31 );
+          case 'M':
+            return limit( position, symbol, 12 );
+          case 'Y': case '0':
+            return /\d/;
+          default:
+            if( /\{[^}]+?\}/.test( symbol ) ) {
+              return new RegExp( symbol.slice( 2, -2 ) );
+            }
+            return symbol;
+        }
+      });
+
+      //console.log( maskArr );
+      vanillaTextMask.maskInput({
+        inputElement: el,
+        guide: false,
+        mask: maskArr,
+      });
+    } catch( e ) {
+      console.error( 'X.js: "vanillaTextMask" is not defined. Details: https:://github.com/text-mask/text-mask' );
+    }
+  }
+});
+
 /**
  * An accessible dialog window: modal, alert, dialog, popup
  *
@@ -265,7 +537,7 @@ method('modal', (e, el) => {
       setTimeout( () => {
         let modal = document.getElementById(id);
         if( modal ) {
-          modal.classList.add( 'is-active', animation || 'fade' );
+          modal.classList.add('is-active', animation || 'fade');
         }
         document.body.style.overflow = 'hidden';
       }, 25 );
@@ -273,21 +545,73 @@ method('modal', (e, el) => {
     close: animation => {
       let modal = el.closest( '.modal' );
       if( modal !== null && modal.classList.contains( 'is-active' ) ) {
-        modal.classList.remove( 'is-active', animation || 'fade' );
+        modal.classList.remove('is-active', animation || 'fade');
         document.body.style.overflow = '';
       }
     }
   }
 });
 
-method('default', (e, el) => (url, options = {}, callback) => {
+/**
+ * Notifications system
+ *
+ * @since 1.0
+ */
+method( 'notice', (e, el) => {
+  return {
+    items: [],
+    add(message) {
+      this.items.push({ id: e.timeStamp, type: e.detail.type, message });
+    },
+    remove(notification) {
+      console.log(notification)
+      console.log(this.items)
+      this.items = this.items.filter(i => i.id !== notification.id);
+    },
+  }
+})
+store('notice', {
+  items: {},
+  duration: 4000,
+  info( message ) {
+    this.notify( message, 'info' );
+  },
+  success( message ) {
+    this.notify( message, 'success' );
+  },
+  warning( message ) {
+    this.notify( message, 'warning' );
+  },
+  error( message ) {
+    this.notify( message, 'error' );
+  },
+  loading( message ) {
+    this.notify( message, 'loading' );
+  },
+  close( id ) {
+    if ( typeof this.items[id] !== 'undefined' ) {
+      this.items[id].selectors.push( 'hide' );
 
+      setTimeout( () => delete this.items[id], 1000 )
+    }
+  },
+  add( message, type ) {
+    if ( message ) {
+      let animationName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5),
+          timestamp     = Date.now();
+      this.items[timestamp] = {
+        anim: `url("data:image/svg+xml;charset=UTF-8,%3csvg width='24' height='24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cstyle%3ecircle %7b animation: ${this.duration}ms ${animationName} linear;%7d%40keyframes ${animationName} %7bfrom%7bstroke-dasharray:0 70%7dto%7bstroke-dasharray:70 0%7d%7d%3c/style%3e%3ccircle cx='12' cy='12' r='11' stroke='%23000' stroke-opacity='.2' stroke-width='2'/%3e%3c/svg%3e")`,
+        message: message,
+        closable: true,
+        selectors: [ type || 'info' ],
+        classes() {
+          return this.selectors.map( x => 'notice__item--' + x ).join(' ')
+        },
+      }
+      setTimeout( () => this.close(timestamp), this.duration );
+    }
+  },
 });
-
-
-
-
-
 
 
 
@@ -306,10 +630,10 @@ method('default', (e, el) => (url, options = {}, callback) => {
 data( 'timer', ( endDate, startDate ) => ({
   timer: null,
   end: endDate, // format: '2021-31-12T14:58:31+00:00'
-  day:  '00',
-  hour: '00',
-  min:  '00',
-  sec:  '00',
+  day:  '01',
+  hour: '01',
+  min:  '01',
+  sec:  '01',
   init() {
     let start = startDate || new Date().valueOf(),
         end   = new Date( this.end ).valueOf();
@@ -333,3 +657,159 @@ data( 'timer', ( endDate, startDate ) => ({
     }
   },
 }));
+
+data('dropdown', () => ({
+  open: false,
+  toggle() {
+    console.log(this)
+    this.open = ! this.open
+  },
+}))
+
+/**
+ * Avatar
+ *
+ * @since 1.0
+ */
+data('avatar', () => ({
+  content: '',
+  image: '',
+  add(event, callback) {
+    let file = event.target.files[0];
+    if (file) {
+      let reader = new FileReader();
+      reader.onload = e => {
+        this.image = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (callback) {
+      callback();
+    }
+  },
+  remove() {
+    let root  = this.$el.closest('[x-data]'),
+      input = root && root.querySelector('input[type="file"]');
+    if (input) {
+      input.value = '';
+    }
+    this.image = '';
+  },
+  getInitials( string, letters = 2 ) {
+    const wordArray = string.split(' ').slice( 0, letters );
+    if ( wordArray.length >= 2 ) {
+      return wordArray.reduce( ( accumulator, currentValue ) => `${accumulator}${currentValue[0].charAt(0)}`.toUpperCase(), '' );
+    }
+    return wordArray[0].charAt(0).toUpperCase();
+  },
+}))
+
+/**
+ * Custom fields builder.
+ *
+ * @since 1.0
+ */
+data('builder', () => ({
+  default: {
+    location: 'post',
+    operator: '===',
+    value: 'editor',
+  },
+  groups: [
+    {
+      rules: [
+        {
+          location: 'post_status',
+          operator: '!=',
+          value: 'contributor',
+        },
+      ]
+    },
+  ],
+  addGroup() {
+    let pattern = JSON.parse(JSON.stringify(this.default));
+    this.groups.push({
+      rules: [ pattern ]
+    });
+  },
+  removeGroup(index) {
+    this.groups.splice(index, 1);
+  },
+  addRule(key) {
+    let pattern = JSON.parse(JSON.stringify(this.default));
+    this.groups[key].rules.push(pattern);
+  },
+  removeRule(key,index) {
+    this.groups[key].rules.splice(index, 1);
+  },
+  submit() {
+    let groups = JSON.parse(JSON.stringify(this.groups));
+    console.log(groups);
+  },
+}))
+
+/**
+ * Table checkboxes
+ *
+ * @since 1.0
+ */
+data('table', () => ({
+  init() {
+    document.addEventListener( 'keydown', e => {
+      let key = window.event ? event : e;
+      if ( !!key.shiftKey ) {
+        this.selection.shift = true;
+      }
+    });
+    document.addEventListener( 'keyup', e => {
+      let key = window.event ? event : e;
+      if ( !key.shiftKey ) {
+        this.selection.shift = false;
+      }
+    });
+  },
+  selection: {
+    box: {},
+    shift: false,
+    addMore: true,
+  },
+  items: [],
+  trigger: {
+    ['@change']( e ) {
+      let inputs = document.querySelectorAll( 'input[name="item[]"]' );
+      if (inputs.length) {
+        inputs.forEach(input => input.checked = e.target.checked);
+      }
+    },
+  },
+  switcher: {
+    ['@click']( e ) {
+      let checkboxes = document.querySelectorAll( 'input[name="item[]"]' );
+      let nodeList   = Array.prototype.slice.call( document.getElementsByClassName( 'cb' ) );
+
+      this.selection.addMore = !!e.target.checked;
+      if ( this.selection.shift ) {
+        this.selection.box[1] = nodeList.indexOf( e.target.parentNode );
+
+        let i = this.selection.box[0],
+          x = this.selection.box[1];
+
+        if ( i > x ) {
+          for ( ; x < i; x++ ) {
+            checkboxes[x].checked = this.selection.addMore;
+          }
+        }
+        if ( i < x ) {
+          for ( ; i < x; i++ ) {
+            checkboxes[i].checked = this.selection.addMore;
+          }
+        }
+        this.selection.box[0] = undefined;
+        this.selection.box[1] = undefined;
+      } else {
+        this.selection.box[0] = nodeList.indexOf( e.target.parentNode );
+      }
+    },
+  }
+}))
