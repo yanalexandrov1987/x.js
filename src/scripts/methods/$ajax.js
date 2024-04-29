@@ -32,7 +32,9 @@ method('ajax', (e, el) => (url, options = {}, callback) => {
     xhr.open(method, url);
 
     for (const i in options.headers) {
-      xhr.setRequestHeader(i, options.headers[i]);
+      if (options.headers.hasOwnProperty(i)) {
+        xhr.setRequestHeader(i, options.headers[i]);
+      }
     }
 
     xhr.withCredentials = options.credentials === 'include';
@@ -44,8 +46,6 @@ method('ajax', (e, el) => (url, options = {}, callback) => {
     xhr.send(data);
   }).then(response => {
     el.classList.remove('is-load');
-
-    submitBtn && submitBtn.removeAttribute('style');
 
     return response();
   });
