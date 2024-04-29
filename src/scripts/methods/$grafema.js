@@ -163,25 +163,9 @@ let findNextIndex = (steps, current, direction = 1) => {
 };
 
 /**
- * Copy data to clipboard.
- *
- * @since 1.0
- */
-method('copy', (e, el) => subject => {
-  window.navigator.clipboard.writeText(subject)
-    .then(() => {
-      let classes = ['ph-copy', 'ph-check'];
-
-      classes.forEach(s => el.classList.toggle(s));
-      setTimeout(() => classes.forEach(s => el.classList.toggle(s)), 1000);
-    });
-});
-
-/**
  * Date picker with Datepicker.js
  *
  * @see     https://github.com/wwilsman/Datepicker.js
- * @licence MIT
  * @since   1.0
  */
 method('pickadate', (e, el) => options => {

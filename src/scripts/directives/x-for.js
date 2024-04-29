@@ -6,8 +6,8 @@ directive('for', (el, expression, attribute, x, component) => {
     return;
   }
 
-  const regex  = /^\(?(\w+)(?:,\s*(\w+))?\)?\s+in\s+(\w+)$/;
-  const [, item, index = 'key', items] = expression.match(regex) || [];
+  // parse x-for value like "dog in dogs"
+  const [, item, index = 'key', items] = expression.match(/^\(?(\w+)(?:,\s*(\w+))?\)?\s+in\s+(\w+)$/) || [];
 
   const dataItems = saferEval(`${items}`, component.data);
 
